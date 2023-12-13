@@ -1,0 +1,8 @@
+[submodule "tabs"]
+	path = apps/tabs
+	url = https://github.com/typerefinery-ai/electron-browsertabs.git
+	branch = main
+[submodule "chat"]
+	path = apps/chat
+	url = https://github.com/typerefinery-ai/electron-chat.git
+	branch = main
