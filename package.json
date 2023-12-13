@@ -12,7 +12,10 @@
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "start": "electron-vite preview",
-    "dev": "electron-vite dev",
+    "dev:apps-tabs": "npm run dev --prefix apps/tabs",
+    "dev:apps-chat": "npm run dev --prefix apps/chat",
+    "dev:electron": "electron-vite dev",
+    "dev": "concurrently npm:dev:*",
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:win": "npm run build && electron-builder --win --config",
@@ -22,13 +25,17 @@
   "dependencies": {
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.0",
-    "electron-updater": "^6.1.1"
+    "electron-updater": "^6.1.1",
+    "jquery": "^3.7.1",
+    "split-grid": "^1.0.11"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^1.0.1",
     "@electron-toolkit/eslint-config-ts": "^1.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
+    "@rollup/plugin-inject": "^5.0.5",
     "@types/node": "^18.17.5",
+    "concurrently": "^8.2.2",
     "electron": "^25.6.0",
     "electron-builder": "^24.6.3",
     "electron-vite": "^1.0.27",
