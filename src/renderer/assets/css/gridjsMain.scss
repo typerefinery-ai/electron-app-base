@@ -1,0 +1,20 @@
+
+
+// split for left aside, content and right aside
+
+.gridMain {
+  width: calc(100%);
+  height: calc(100%);
+  display: grid;
+  grid-template-columns: 1fr 10px 1fr 10px 1fr;
+}
+
+// left aside resizing bar
+.gutterMain-col-1 {
+  grid-column: 2;
+}
+
+// right aside resizing bar
+.gutterMain-col-3 {
+  grid-column: 4;
+}

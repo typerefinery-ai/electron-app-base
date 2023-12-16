@@ -1,0 +1,27 @@
+
+content, .full {
+  display: flex;
+  border: env(enable-debug, var(--debug-border));
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+.contentheader {
+  border: var(--debug-border);
+  height: 72px;
+}
+
+.contenttabs {
+  height: 40px;
+  border: var(--debug-border);
+}
+
+
+
+.contentbody {
+  width: 100%;
+}

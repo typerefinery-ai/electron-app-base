@@ -1,0 +1,35 @@
+
+/*footer*/
+.windowfooter {
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+  user-select: none;
+  border: var(--debug-border);
+  align-items: center;
+  align-content: stretch;
+  justify-content: center;
+  padding: 1px;
+}
+
+.windowfooter > * {
+  flex: 1;
+}
+
+.windowfooterleft {
+  display: flex;
+  flex: 1;
+  justify-content: left;
+}
+
+.windowfootercenter {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+}
+
+.windowfooterright {
+  display: flex;
+  flex: 1;
+  justify-content: right;
+}

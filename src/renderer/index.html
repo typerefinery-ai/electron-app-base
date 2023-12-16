@@ -6,10 +6,10 @@
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src * data:; font-src 'self' data:; connect-src *"
     />
 
-    <link href="./assets/style.css" type="text/css" rel="stylesheet" />
+    <link href="./assets/styles.scss" type="text/css" rel="stylesheet" lang="sass"/>
   </head>
 
   <body>
@@ -28,15 +28,15 @@
       </div>
   </header>
   <content class="windowcontent">
-    <div class="grid gridM">
+    <div class="grid gridMain">
       <div class="asideleft">Left Aside</div>
-      <div class="gutter-col gutterM-col-1"></div>
+      <div class="gutter-col gutterMain-col-1"></div>
       <div class="full">
 
-          <div class="grid gridH">
+          <div class="grid gridHorizontal">
             <!--TOP-->
             <div class="full">
-                <div class="grid gridV">
+                <div class="grid gridVertical">
                   <div class="content contentleft">
                     <header class="contentheader">
                       <div class="contenttabs">Tabs</div>
@@ -73,13 +73,13 @@
                 </div>
             </div>
             <!--SEPARATOR-->
-            <div class="gutter-row gutterH-row-1"></div>
+            <div class="gutter-row gutterHorizontal-row-1"></div>
             <!--BOTTOM-->
             <div class="gutter">Gutter</div>
           </div>
 
       </div>
-      <div class="gutter-col gutterM-col-3"></div>
+      <div class="gutter-col gutterMain-col-3"></div>
       <div class="asideright">Right Aside</div>
     </div>
   </content>

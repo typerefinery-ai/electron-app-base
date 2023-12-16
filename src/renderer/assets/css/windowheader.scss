@@ -1,0 +1,26 @@
+
+/*header*/
+.windowheader {
+  height: var(--fallback-title-bar-height);
+  overflow: hidden;
+  user-select: none;
+  display: flex;
+  align-items: stretch;
+  border: var(--debug-border);
+  justify-content: space-between;
+  align-content: stretch;
+}
+.windowtitle {
+  display: flex;
+  border: var(--debug-border);
+  align-items: stretch;
+  align-content: stretch;
+  justify-content: center;
+  width: 15%;
+  overflow: hidden;
+}
+.windowtitle div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

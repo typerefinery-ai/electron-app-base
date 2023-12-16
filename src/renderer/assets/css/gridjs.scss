@@ -1,0 +1,48 @@
+//update to ootb gridjs styles
+
+/*allow padding for separator*/
+.gutter {
+  user-select: none;
+  overflow: hidden;
+}
+
+.gutter-col {
+    grid-row: 1/-1;
+    cursor: col-resize;
+}
+
+.gutter-col[focus] {
+    background-color: var(--focus-color);
+}
+
+.gutter-row {
+  grid-column: 1/-1;
+  cursor: row-resize;
+}
+
+.gutter-row[focus] {
+  background-color: var(--focus-color);
+}
+
+.gutter-col, .gutter-row {
+  background-color: rgb(229, 231, 235);
+  background-repeat: no-repeat;
+  background-position: 50%;
+}
+
+// image for resizing bar vertical
+.gutter-col {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+  cursor: col-resize;
+}
+
+// image for resizing bar horizontal
+.gutter-row {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=');
+  cursor: row-resize;
+}
+
+// allow pointer events for resizing bar
+.gutter-col, .gutter-row {
+  pointer-events: all;
+}

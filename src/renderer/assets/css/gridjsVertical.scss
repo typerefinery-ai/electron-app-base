@@ -1,0 +1,15 @@
+
+// split for split content left and right columns
+
+.gridVertical {
+  height: calc(100%);
+  width: calc(100%);
+  display: grid;
+  grid-template-columns: 1fr 10px 1fr;
+  overflow: hidden;
+}
+
+// resizing bar
+.gutterV-col-1 {
+  grid-column: 2;
+}

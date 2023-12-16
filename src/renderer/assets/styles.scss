@@ -1,0 +1,38 @@
+:root {
+  --debug-border: 0px dashed red;
+  --fallback-title-bar-height: 25px;
+  --element-padding: 3px;
+  --focus-color: lightgreen;
+  --url-secure-color: lightgreen;
+  --url-notsecure-color: red;
+}
+
+
+@import 'css/window.scss';
+
+@import 'css/utils.scss';
+
+// window decoration
+@import 'css/windownav.scss';
+@import 'css/windowfooter.scss';
+@import 'css/windowcontrols.scss';
+@import 'css/windowheader.scss';
+
+// style for grid
+@import 'css/gridjs.scss';
+@import 'css/gridjsMain.scss';
+@import 'css/gridjsVertical.scss';
+@import 'css/gridjsHorizontal.scss';
+
+// content
+@import 'css/contentleft.scss';
+@import 'css/contentright.scss';
+@import 'css/content.scss';
+@import 'css/contentaddress.scss';
+@import 'css/contentgutter.scss';
+
+// asides
+@import 'css/asideleft.scss';
+@import 'css/asideright.scss';
+
+

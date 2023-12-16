@@ -1,0 +1,40 @@
+
+/* windowcontrols */
+.windowfocus {
+
+}
+
+.windowfocus[focus] {
+  background-color: var(--focus-color);
+}
+
+/*<500px S*/
+@media only screen and (max-width: 499px) {
+  .windowcontrols {
+    text-align: right;
+    width: 50%;
+    border: var(--debug-border);
+    overflow: hidden;
+  }
+}
+
+/*500-1200 M*/
+@media only screen and (min-width: 500px) and (max-width: 1199px) {
+  .windowcontrols {
+    text-align: right;
+    width: 50%;
+    border: var(--debug-border);
+    overflow: hidden;
+  }
+}
+
+/*>1200px L*/
+@media only screen and (min-width: 1200px) {
+  .windowcontrols {
+    text-align: right;
+    width: 10%;
+    border: var(--debug-border);
+    overflow: hidden;
+  }
+}
+

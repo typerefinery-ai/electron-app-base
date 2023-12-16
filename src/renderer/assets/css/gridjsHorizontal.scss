@@ -1,0 +1,17 @@
+
+// split for horizontal split content and gutter
+
+.gridHorizontal {
+  width: calc(100%);
+  display: grid;
+  grid-template-rows: 1fr 10px 1fr;
+  overflow: hidden;
+}
+
+// resizing bar above gutter
+.gutterHorizontal-row-1 {
+  grid-row: 2;
+}
+
+
+
