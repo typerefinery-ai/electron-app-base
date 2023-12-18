@@ -1,5 +1,6 @@
 import Split from 'split-grid'
-import $ from 'jquery';
+import $ from 'jquery'
+import { SplitUtils } from './splitutils'
 
 export function init(): void {
   window.addEventListener('DOMContentLoaded', () => {
@@ -10,113 +11,186 @@ export function init(): void {
 function ready(document): void {
   console.log('loading home.ts')
 
+  const splitUtils = new SplitUtils($)
+
   //window content column split, left aise and right aside column
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const gridM = Split({
+  splitUtils.gridMain = Split({
     minSize: 0,
     snapOffset: 40,
     columnGutters: [
       {
         track: 1,
-        element: document.querySelector('.gutterM-col-1')
+        element: splitUtils.LeftAsideSplitEl
       },
       {
         track: 3,
-        element: document.querySelector('.gutterM-col-3')
+        element: splitUtils.RightAsideSplitEl
       }
     ]
   })
 
-  document.querySelector('.gridM').style['grid-template-columns'] = '0.04fr 10px 2fr 10px 0.04fr'
+  //set initial split size
+  splitUtils.resetMainSize()
 
   //window content row split, content and gutter
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const gridH = Split({
+  splitUtils.gridHorizontal = Split({
     minSize: 0,
     snapOffset: 40,
     rowGutters: [
       {
         track: 1,
-        element: document.querySelector('.gutterH-row-1')
+        element: splitUtils.GutterSplitEl
       }
     ]
   })
-  document.querySelector('.gridH').style['grid-template-rows'] = '90% 10px 1fr'
+
+  splitUtils.resetHorizontalSize()
 
   //window content row split, left and right
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const gridV = Split({
+  splitUtils.gridVerticalertical = Split({
     minSize: 0,
     snapOffset: 50,
     columnGutters: [
       {
         track: 1,
-        element: document.querySelector('.gutterV-col-1')
+        element: splitUtils.ContentSplitEl
       }
     ]
   })
 
   //TODO: set split size made by user
-  document.querySelector('.gridV').style['grid-template-columns'] = '1fr 10px 1fr'
+  splitUtils.resetVerticalSize()
 
-  //window contorls
-
-  $('.windowfocus').on('click', function () {
-    if ($('.windowfocus').attr('focus')) {
-      $('.windowfocus').removeAttr('focus')
+  splitUtils.WindowFocusToggle.on('click', function () {
+    if (splitUtils.isWindowFocusToggleFocus) {
+      splitUtils.setMainFocus(true)
       //reset gutter
-      document.querySelector('.gridH').style['grid-template-rows'] = '90% 10px 1fr'
+      splitUtils.resetHorizontalSize()
+      splitUtils.setHorizontalFocus(true)
       //reset assides
-      document.querySelector('.gridM').style['grid-template-columns'] =
-        '0.04fr 10px 2fr 10px 0.04fr'
+      splitUtils.resetMainSize()
     } else {
+      splitUtils.setMainFocus()
       //hide gutter
-      $('.windowfocus').attr('focus', 'focus')
-      document.querySelector('.gridH').style['grid-template-rows'] = '98% 10px 1fr'
+      splitUtils.resetHorizontalSize(splitUtils.DEFAULT_GRID_HORIZONTAL_HIDE_SIZE)
+      splitUtils.setHorizontalFocus()
       //hide asides
-      document.querySelector('.gridM').style['grid-template-columns'] = '0fr 10px 1fr 10px 0fr'
+      splitUtils.resetMainSize(splitUtils.DEFAULT_GRID_MAIN_HIDE_SIZE)
     }
   })
 
-  const $contentleft = $('.contentleft')
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      // const cr = entry.contentRect
+      console.log('Element:', entry.target)
+      // console.log(`Element size: ${cr.width}px x ${cr.height}px`)
+      // console.log(`Element padding: ${cr.top}px ; ${cr.left}px`)
 
-  $('.contentleft').resize(function () {
-    console.log('resize')
-    console.log([
-      $contentleft.offset().left,
-      $contentleft.offset().top,
-      $contentleft.width(),
-      $contentleft.height()
-    ])
-  })
+      splitUtils.updateElementSize(splitUtils.ContentLeftEl, splitUtils.ContentLeftBodyEl)
+      splitUtils.updateElementSize(splitUtils.ContentRightEl, splitUtils.ContentRightBodyEl)
+      splitUtils.updateElementSize(splitUtils.LeftAsideEl, splitUtils.LeftAsideEl)
+      splitUtils.updateElementSize(splitUtils.RightAsideEl, splitUtils.RightAsideEl)
+      splitUtils.updateElementSize(splitUtils.GutterEl, splitUtils.GutterEl)
 
-  $('.gutterV-col-1').on('dblclick', function () {
-    console.log('.gridV .gutterV-col-1 click')
-    if ($('.gutterV-col-1').attr('focus')) {
-      console.log('right hide')
-      $('.gutterV-col-1').removeAttr('focus')
-      //reset right col
-      document.querySelector('.gridV').style['grid-template-columns'] = '1fr 10px 1fr'
-    } else {
-      console.log('right restore')
-      //hide right col
-      $('.gutterV-col-1').attr('focus', 'focus')
-      document.querySelector('.gridV').style['grid-template-columns'] = '2fr 10px 0fr'
+      //resetHorizontalSize()
+      console.log(["splitUtils.LeftAside",splitUtils.LeftAside.width()==0])
+      if (splitUtils.LeftAside.width() == 0) {
+        splitUtils.setMainLeftAsideFocus()
+      } else {
+        splitUtils.setMainLeftAsideFocus(true)
+      }
+      console.log(["splitUtils.RightAside",splitUtils.RightAside.width()==0])
+      if (splitUtils.RightAside.width() == 0) {
+        splitUtils.setMainRightAsideFocus()
+      } else {
+        splitUtils.setMainRightAsideFocus(true)
+      }
+      if (splitUtils.Gutter.height() == 0) {
+        splitUtils.setHorizontalFocus()
+      } else {
+        splitUtils.setHorizontalFocus(true)
+      }
+      if (splitUtils.ContentLeft.width() == 0) {
+        splitUtils.setVerticalFocus()
+      } else if (splitUtils.ContentRight.width() == 0) {
+        splitUtils.setVerticalFocus()
+      } else {
+        splitUtils.setVerticalFocus(true)
+      }
+
+      // if (splitUtils.isLeftAsideSplitFocus) {
+      //   splitUtils.setMainRightAsideFocus(true)
+      // }
     }
   })
 
-  $('.gutterH-row-1').on('dblclick', function () {
-    if ($('.gutterH-row-1').attr('focus')) {
-      console.log('gutter hide')
-      $('.gutterH-row-1').removeAttr('focus')
-      //reset gutter
-      document.querySelector('.gridH').style['grid-template-rows'] = '90% 10px 1fr'
+  resizeObserver.observe(splitUtils.ContentHorizontalEl)
+  resizeObserver.observe(splitUtils.ContentVerticalEl)
+  resizeObserver.observe(splitUtils.ContentLeftEl)
+  resizeObserver.observe(splitUtils.ContentRightEl)
+
+  splitUtils.ContentSplit.on('dblclick', function (event) {
+    if (splitUtils.isContentSplitFocus) {
+      // splitUtils.setVerticalFocus(true)
+      splitUtils.resetVerticalSize()
     } else {
-      console.log('gutter restore')
-      //hide right col
-      $('.gutterH-row-1').attr('focus', 'focus')
-      //hide gutter
-      document.querySelector('.gridH').style['grid-template-rows'] = '100% 10px 0fr'
+      // splitUtils.setVerticalFocus()
+      if (event.shiftKey) {
+        splitUtils.resetVerticalSize(splitUtils.DEFAULT_GRID_VERTICAL_HIDE_RIGHT_SIZE)
+      } else {
+        splitUtils.resetVerticalSize(splitUtils.DEFAULT_GRID_VERTICAL_HIDE_LEFT_SIZE)
+      }
+    }
+  })
+
+  splitUtils.GutterSplit.on('dblclick', function () {
+    if (splitUtils.isGutterSplitFocus) {
+      // splitUtils.setHorizontalFocus(true)
+      splitUtils.resetHorizontalSize()
+    } else {
+      // splitUtils.setHorizontalFocus()
+      splitUtils.resetHorizontalSize(splitUtils.DEFAULT_GRID_HORIZONTAL_HIDE_SIZE)
+    }
+  })
+
+  splitUtils.LeftAsideSplit.on('dblclick', function () {
+    if (splitUtils.isLeftAsideSplitFocus) {
+      // splitUtils.setMainLeftAsideFocus(true)
+      //resetHorizontalSize()
+      if (splitUtils.isRightAsideSplitFocus) {
+        splitUtils.resetMainSize(splitUtils.DEFAULT_GRID_MAIN_HIDE_RIGHT_SIZE)
+      } else {
+        splitUtils.resetMainSize()
+      }
+    } else {
+      // splitUtils.setMainLeftAsideFocus()
+      if (splitUtils.isRightAsideSplitFocus) {
+        splitUtils.resetMainSize(splitUtils.DEFAULT_GRID_MAIN_HIDE_SIZE)
+      } else {
+        splitUtils.resetMainSize(splitUtils.DEFAULT_GRID_MAIN_HIDE_LEFT_SIZE)
+      }
+    }
+  })
+
+  splitUtils.RightAsideSplit.on('dblclick', function () {
+    if (splitUtils.isRightAsideSplitFocus) {
+      // splitUtils.setMainRightAsideFocus(true)
+      //resetHorizontalSize()
+      if (splitUtils.isLeftAsideSplitFocus) {
+        splitUtils.resetMainSize(splitUtils.DEFAULT_GRID_MAIN_HIDE_LEFT_SIZE)
+      } else {
+        splitUtils.resetMainSize()
+      }
+    } else {
+      // splitUtils.setMainRightAsideFocus()
+      if (splitUtils.isLeftAsideSplitFocus) {
+        splitUtils.resetMainSize(splitUtils.DEFAULT_GRID_MAIN_HIDE_SIZE)
+      } else {
+        splitUtils.resetMainSize(splitUtils.DEFAULT_GRID_MAIN_HIDE_RIGHT_SIZE)
+      }
     }
   })
 
