@@ -11,6 +11,8 @@ export function init(): void {
 function ready(document): void {
   console.log('loading home.ts')
 
+  // const { ipc } = window
+
   const splitUtils = new SplitUtils($)
 
   //window content column split, left aise and right aside column
@@ -96,13 +98,13 @@ function ready(document): void {
       splitUtils.updateElementSize(splitUtils.GutterEl, splitUtils.GutterEl)
 
       //resetHorizontalSize()
-      console.log(["splitUtils.LeftAside",splitUtils.LeftAside.width()==0])
+      console.log(['splitUtils.LeftAside', splitUtils.LeftAside.width() == 0])
       if (splitUtils.LeftAside.width() == 0) {
         splitUtils.setMainLeftAsideFocus()
       } else {
         splitUtils.setMainLeftAsideFocus(true)
       }
-      console.log(["splitUtils.RightAside",splitUtils.RightAside.width()==0])
+      console.log(['splitUtils.RightAside', splitUtils.RightAside.width() == 0])
       if (splitUtils.RightAside.width() == 0) {
         splitUtils.setMainRightAsideFocus()
       } else {
@@ -121,8 +123,39 @@ function ready(document): void {
         splitUtils.setVerticalFocus(true)
       }
 
-      // if (splitUtils.isLeftAsideSplitFocus) {
-      //   splitUtils.setMainRightAsideFocus(true)
+      // if (ipc && ipc.windowResize) {
+      //   ipc.windowResize({
+      //     left: {
+      //       x: splitUtils.ContentLeft.offset().top,
+      //       y: splitUtils.ContentLeft.offset().left,
+      //       width: splitUtils.ContentLeft.width(),
+      //       height: splitUtils.ContentLeft.height()
+      //     },
+      //     right: {
+      //       x: splitUtils.ContentRight.offset().top,
+      //       y: splitUtils.ContentRight.offset().left,
+      //       width: splitUtils.ContentRight.width(),
+      //       height: splitUtils.ContentRight.height()
+      //     },
+      //     gutter: {
+      //       x: splitUtils.Gutter.offset().top,
+      //       y: splitUtils.Gutter.offset().left,
+      //       width: splitUtils.Gutter.width(),
+      //       height: splitUtils.Gutter.height()
+      //     },
+      //     leftAside: {
+      //       x: splitUtils.LeftAside.offset().top,
+      //       y: splitUtils.LeftAside.offset().left,
+      //       width: splitUtils.LeftAside.width(),
+      //       height: splitUtils.LeftAside.height()
+      //     },
+      //     rightAside: {
+      //       x: splitUtils.RightAside.offset().top,
+      //       y: splitUtils.RightAside.offset().left,
+      //       width: splitUtils.RightAside.width(),
+      //       height: splitUtils.RightAside.height()
+      //     }
+      //   })
       // }
     }
   })

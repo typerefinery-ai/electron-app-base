@@ -1,10 +1,26 @@
 :root {
   --debug-border: 0px dashed red;
-  --fallback-title-bar-height: 25px;
+  --fallback-title-bar-height: 37px;
+  --footer-bar-height: 26px;
+  --fallback-menu-bar-height: 25px;
+  --title-bar-color: #0072c6;
   --element-padding: 3px;
+  --env-titlebar-area-y: env(titlebar-area-y, 0);
+  --env-titlebar-area-x: env(titlebar-area-x, 0);
+  --env-titlebar-area-height: calc(env(titlebar-area-height, var(--fallback-title-bar-height)) + 1px );
+  --env-titlebar-area-width: env(titlebar-area-width, 100%);
+  --title-bar-button-width: 50px;
+  --title-bar-button-width-default: env(titlebar-area-width, calc(100vw - ( var(--title-bar-button-width) * 3) ));
+  --title-bar-button-width-calc: calc((100vw - var(--title-bar-button-width-default)) / 3);
+
+
   --focus-color: lightgreen;
+  --focus-color-text: #000;
   --url-secure-color: lightgreen;
   --url-notsecure-color: red;
+  --main-height-offset: calc(var(--env-titlebar-area-height) + var(--footer-bar-height));
+  --main-top: calc(var(--env-titlebar-area-height) + 1px);
+  --main-height: calc(100vh - var(--main-height-offset));
 }
 
 
@@ -13,6 +29,7 @@
 @import 'css/utils.scss';
 
 // window decoration
+@import 'css/windowtitlebar.scss';
 @import 'css/windownav.scss';
 @import 'css/windowfooter.scss';
 @import 'css/windowcontrols.scss';

@@ -5,9 +5,26 @@
 }
 
 .windowfocus[focus] {
-  background-color: var(--focus-color);
+  background-color: var(--focus-color) !important;
+
+  svg path,
+  svg rect,
+  svg polygon {
+    fill: var(--focus-color-text) !important;
+  }
 }
 
+.windowcontrols {
+  flex-grow: 1;
+  color: white;
+  -webkit-app-region: drag;
+  display: flex;
+  justify-content: flex-end;
+
+  .ui-btn {
+    -webkit-app-region: no-drag;
+  }
+}
 /*<500px S*/
 @media only screen and (max-width: 499px) {
   .windowcontrols {

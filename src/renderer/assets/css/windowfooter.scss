@@ -1,6 +1,8 @@
 
 /*footer*/
 .windowfooter {
+  position: absolute;
+  bottom: 0;
   display: flex;
   -webkit-flex-direction: row;
   flex-direction: row;
@@ -9,7 +11,10 @@
   align-items: center;
   align-content: stretch;
   justify-content: center;
-  padding: 1px;
+  padding: 0;
+  margin: 0;
+  height: var(--footer-bar-height);
+  margin-left: 5px;
 }
 
 .windowfooter > * {

@@ -1,0 +1,59 @@
+.windowtitlebarcontainer {
+  position: absolute;
+  top: var(--env-titlebar-area-y);
+  height: var(--env-titlebar-area-height);
+  width: 100%;
+  background-color: var(--title-bar-color);
+
+  .windowtitlebar {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    left: var(--env-titlebar-area-x);
+    width: var(--env-titlebar-area-width);
+    // cursor: move;
+    //-webkit-app-region: drag;
+
+    .ui-titleicon {
+      flex-grow: 1;
+      max-width: 32px;
+      max-height: 32px;
+    }
+    .ui-titletext {
+      flex-grow: 2;
+      max-height: 20px;
+      width: auto;
+      font: 12px/20px "Segoe UI", Arial, sans-serif;
+      color: #fff;
+      margin-left: 10px;
+    }
+    .ui-btn {
+      margin: 0;
+      width: var(--title-bar-button-width);
+      height:100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      display: flex;
+      align-content: center;
+      justify-content: center;
+      align-items: center;
+    }
+    .ui-btn:hover {
+      background: rgba(255,255,255,.1);
+    }
+    .ui-btn.close:hover {
+      background: #e81123;
+    }
+    .ui-btn svg path,
+    .ui-btn svg rect,
+    .ui-btn svg polygon {
+      fill: #fff;
+    }
+    .ui-btn svg {
+      width: 40%;
+      height: 40%;
+    }
+  }
+}

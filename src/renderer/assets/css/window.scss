@@ -4,10 +4,20 @@ html, body {
   margin: 0px;
 }
 body {
-  display: flex;
-  flex-flow: column;
+  // display: flex;
+  // flex-flow: column;
+  overflow: hidden;
   height: 100%;
   width: 100%;
 }
 
-
+main {
+  position: absolute;
+  display: flex;
+  flex-flow: column;
+  left: 0;
+  right: 0;
+  height: var(--main-height);
+  top: var(--main-top);
+  overflow-y: scroll;
+}

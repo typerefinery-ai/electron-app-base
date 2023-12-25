@@ -1,26 +1,47 @@
 
 /*header*/
 .windowheader {
-  height: var(--fallback-title-bar-height);
+  // height: var(--fallback-title-bar-height) + var(--fallback-menu-bar-height);
   overflow: hidden;
+  //cursor: move;
   user-select: none;
   display: flex;
   align-items: stretch;
   border: var(--debug-border);
   justify-content: space-between;
   align-content: stretch;
+  flex-direction: column;
+  height: var(--env-titlebar-area-height);
 }
-.windowtitle {
-  display: flex;
-  border: var(--debug-border);
-  align-items: stretch;
-  align-content: stretch;
-  justify-content: center;
-  width: 15%;
-  overflow: hidden;
+// .windowtitle {
+//   display: flex;
+//   border: var(--debug-border);
+//   align-items: stretch;
+//   align-content: stretch;
+//   justify-content: center;
+//   width: 15%;
+//   overflow: hidden;
+// }
+// .windowtitle div {
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+// }
+
+.window-hover:hover {
+  background: rgba(255,255,255,0.1);
 }
-.windowtitle div {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.window-hover:hover:active {
+  background: rgba(255,255,255,0.2);
 }
+
+.window-hover-close:hover {
+  background: #E81123 !important;
+}
+.window-hover-close:active {
+  background: #F1707A !important;
+}
+.window-hover-close:active .icon {
+  filter: invert(1);
+}
+

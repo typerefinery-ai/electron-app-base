@@ -3,12 +3,12 @@
   display: flex;
   align-items: stretch;
   align-content: stretch;
-  justify-content: center;
+  justify-content: flex-start;
   overflow: hidden;
   padding: var(--element-padding);
-}
-
-.windownav button {
-  margin-right: var(--element-padding);
+  height: var(--fallback-menu-bar-height);
+  button {
+    margin-right: var(--element-padding);
+  }
 }
 
