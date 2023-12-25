@@ -1,12 +1,26 @@
 import { BrowserView, ipcMain, globalShortcut } from 'electron'
-import { DEVTOOLS } from './Utils'
+import path from 'path'
+
+export interface BrowserViewSize {
+  width: number
+  height: number
+  x: number
+  y: number
+}
+
+export interface BrowserViewOptions {
+  applicationUrl: string
+  applicationKey: string
+  backgroundColor?: string
+  localFile?: string
+  trusted?: boolean
+}
 
 export class BrowserViewManager {
-
   public DEFAULT_MAX_HEIGHT = 36
 
   #mainWindow: Electron.BrowserWindow
-  #browserViewList: {[key: string]: BrowserView} = {} // all of the browserViews
+  #browserViewList: { [key: string]: BrowserView } = {} // all of the browserViews
   #lastBrowserView: Electron.BrowserView | null
   #nextRemoveBrowserView: Electron.BrowserView | null
   #homeBrowserview: Electron.BrowserView | null
@@ -28,7 +42,7 @@ export class BrowserViewManager {
     // Object.keys(this.browserViewList).forEach((key) => {
     //   // this.browserViewList[key].destroy()
     // })
-    this.#browserViewList = {}
+    // this.#browserViewList = {}
   }
 
   public removeBrowserView(browserView: BrowserView): void {
@@ -39,26 +53,67 @@ export class BrowserViewManager {
     this.#mainWindow.addBrowserView(browserView)
   }
 
-  private createBrowserView(arg: any): void {
+  public getWindowTitleBarHeightOffset(): number {
+    return process.platform !== 'win32' ? 60 : 40
+  }
+
+  public resize(bounds: Electron.Rectangle): void {
+    // console.log(
+    //   'resize: width: ' +
+    //     bounds.width +
+    //     ' height: ' +
+    //     bounds.height +
+    //     ' x: ' +
+    //     bounds.x +
+    //     ' y: ' +
+    //     bounds.y
+    // )
+  }
+
+  public resizeView(browserView: BrowserView, size: BrowserViewSize): void {
+    browserView.setBounds({ x: size.x, y: size.y, width: size.width, height: size.height })
+  }
+
+  private createBrowserView(arg: BrowserViewOptions): void {
     const [width, height] = this.getSize()
-    if (!this.#browserViewList[`${arg.applicationKey}`]) {
-      this.#browserViewList[`${arg.applicationKey}`] = new BrowserView({ webPreferences: {nodeIntegration: true} })
-      this.#browserViewList[`${arg.applicationKey}`].setAutoResize({ width: true, height: true })
-      this.#browserViewList[`${arg.applicationKey}`].webContents.loadURL(`${arg.applicationUrl}`)
+    const browserViewOptions = {
+      webPreferences: {
+        scrollbars: true,
+        preload: arg.trusted ? path.join(__dirname, '../preload/trusted.js') : '',
+        sandbox: arg.trusted ? false : true,
+        nodeIntegration: arg.trusted ? true : false
+      }
+    }
+
+    let browserView = this.#browserViewList[`${arg.applicationKey}`]
+    if (!browserView) {
+      this.#browserViewList[`${arg.applicationKey}`] = new BrowserView(browserViewOptions)
+      browserView = this.#browserViewList[`${arg.applicationKey}`]
+      browserView.setAutoResize({ width: true, height: true })
+      if (arg.localFile) {
+        browserView.webContents.loadFile(arg.localFile)
+      } else {
+        browserView.webContents.loadURL(`${arg.applicationUrl}`)
+      }
+      if (arg.backgroundColor) {
+        browserView.setBackgroundColor(arg.backgroundColor)
+      }
     } else {
       if (this.#nextRemoveBrowserView) {
         this.removeBrowserView(this.#nextRemoveBrowserView)
       }
     }
-    this.addBrowserView(this.#browserViewList[`${arg.applicationKey}`])
-    this.#browserViewList[`${arg.applicationKey}`].setBounds({ x: 0, y: this.#homeMaxHeight, width, height: height - this.#homeMaxHeight })
+    this.addBrowserView(browserView)
+    this.resizeView(browserView, {
+      x: 0,
+      y: this.#homeMaxHeight,
+      width,
+      height: height - this.#homeMaxHeight
+    })
     if (Object.keys(this.#browserViewList).length > 1) {
       this.#nextRemoveBrowserView = this.#browserViewList[`${arg.applicationKey}`]
     }
     this.#lastBrowserView = this.#browserViewList[`${arg.applicationKey}`]
-    globalShortcut.register('CmdOrCtrl+Alt+V', () => {
-      DEVTOOLS(this.#mainWindow)
-    })
   }
 
   public init(): void {
@@ -67,7 +122,6 @@ export class BrowserViewManager {
     this.onHomeBrowserView()
     this.onCloseBrowserView()
   }
-
 
   private onCreateBrowserView(): void {
     ipcMain.on('create-browser-view', (_, arg) => {
