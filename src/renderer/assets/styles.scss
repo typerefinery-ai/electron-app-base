@@ -4,6 +4,10 @@
   --footer-bar-height: 26px;
   --fallback-menu-bar-height: 25px;
   --title-bar-color: #0072c6;
+
+  --window-background-color: #ddd;
+  --window-color: black;
+
   --element-padding: 3px;
   --env-titlebar-area-y: env(titlebar-area-y, 0);
   --env-titlebar-area-x: env(titlebar-area-x, 0);
@@ -21,6 +25,18 @@
   --main-height-offset: calc(var(--env-titlebar-area-height) + var(--footer-bar-height));
   --main-top: calc(var(--env-titlebar-area-height) + 1px);
   --main-height: calc(100vh - var(--main-height-offset));
+
+  color-scheme: light dark;
+
+
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --title-bar-color: unset;
+    --window-background-color: #333;
+    --window-color: white;
+  }
 }
 
 
