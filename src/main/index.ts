@@ -2,6 +2,7 @@ import {
   app,
   shell,
   BrowserWindow,
+  Tray,
   ipcMain,
   dialog,
   Menu,
@@ -15,7 +16,8 @@ import icon from '../../resources/icon.ico?asset'
 import { BrowserViewManager } from './BrowserViewManager'
 import { MenuItemConstructorOptions, MenuItem } from 'electron/main'
 import { type AppIPC, sharedAppIpc, IPCMethod } from '../preload/ipc'
-import { getConfig, DEVTOOLS, getEnvConfigWithDefault, tryParseInt } from './Utils'
+import { getConfig, getEnvConfigWithDefault, tryParseInt } from './Utils'
+import { DEVTOOLS, createMenu, createTray } from './ElectronUtils'
 import { Logger } from './Logger'
 import i18n from './i18n'
 import log from 'electron-log'
@@ -44,6 +46,10 @@ const mainWindowCloseNoPrompt = false
 let mainWindow: Electron.BrowserWindow
 let mainWindowState: ElectronWindowState.State
 let browserViewManager: BrowserViewManager
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let mainWindowMenu: Menu //create and update app menu
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let mainWindowTray: Tray //create and update app tray icon
 
 const SCRIPT_PRELOAD = path.join(__dirname, '../preload/index.js')
 const VITE_DEV_SERVER_HOST = getEnvConfigWithDefault('VITE_DEV_SERVER_HOST', 'localhost')
@@ -56,6 +62,41 @@ const VITE_DEV_SERVER_SCHEMA = getEnvConfigWithDefault('VITE_DEV_SERVER_SCHEMA',
 
 // create a new logs sub directory with date timestamp everytime the app starts
 const logsDir = getNewLogPath('logs')
+
+const defaultMainWindowTrayMenuTemplate: Array<MenuItemConstructorOptions | MenuItem> = [
+  {
+    id: 'menu-tray-open',
+    label: 'Open',
+    type: 'normal',
+    click: () => mainWindow.show()
+  },
+  { type: 'separator' },
+  {
+    id: 'menu-tray-quit',
+    label: 'Quit',
+    click: () => app.quit()
+  }
+]
+
+const defaultMainWidowMenyTemplate: Array<MenuItemConstructorOptions | MenuItem> = [
+  {
+    label: 'View',
+    accelerator: 'CmdOrCtrl+Shift+V',
+    submenu: [
+      {
+        label: 'open dev tool',
+        accelerator: 'CmdOrCtrl+Shift+I',
+        click(): void {
+          mainWindow.webContents.openDevTools({ mode: 'detach' })
+        }
+      },
+      {
+        label: 'Quit',
+        role: 'quit'
+      }
+    ]
+  }
+]
 
 const defaultMainWindowOptions: BrowserWindowConstructorOptions = {
   width: 1200,
@@ -86,7 +127,7 @@ const defaultMainWindowOptions: BrowserWindowConstructorOptions = {
 const defaultChildWindowOptions: BrowserWindowConstructorOptions = {
   minWidth: 680,
   minHeight: 400,
-  icon: path.join(__dirname, 'assets/icon.ico'),
+  icon: path.join(__dirname, 'resources/icon.ico'),
   autoHideMenuBar: true
 }
 
@@ -187,7 +228,7 @@ app.whenReady().then(() => {
   })
 
   // create the app window
-  mainWindow = createWindow(mainWindowState)
+  mainWindow = createMainWindow(mainWindowState)
 
   createSplashWindow()
 
@@ -196,7 +237,7 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     const allWindows = BrowserWindow.getAllWindows()
     if (allWindows.length === 0) {
-      mainWindow = createWindow(mainWindowState)
+      mainWindow = createMainWindow(mainWindowState)
     } else {
       //focus first window
       allWindows[0].focus()
@@ -299,35 +340,6 @@ ipcMain.on('menu-click', (e, action) => {
 //   loadResource(childWindow, "../index.html", arg)
 // })
 
-function createMenu(): void {
-  const template: Array<MenuItemConstructorOptions | MenuItem> = [
-    {
-      label: 'View',
-      accelerator: 'CmdOrCtrl+Shift+V',
-      submenu: [
-        {
-          label: 'open dev tool',
-          accelerator: 'CmdOrCtrl+Shift+I',
-          click(): void {
-            mainWindow.webContents.openDevTools({ mode: 'detach' })
-          }
-        },
-        {
-          label: 'Quit',
-          role: 'quit'
-        }
-      ]
-    }
-  ]
-  if (!app.isPackaged) {
-    template.unshift({
-      label: 'Debug',
-      submenu: [{ role: 'forceReload' }]
-    })
-  }
-  const menu = Menu.buildFromTemplate(template)
-  Menu.setApplicationMenu(menu)
-}
 
 function addIpcEvents(window: BrowserWindow): void {
   const ipcImplementation: AppIPC = {
@@ -499,7 +511,7 @@ function createExitWindow(): void {
   }, 2000)
 }
 
-function createWindow(mainWindowState: ElectronWindowState.State): Electron.BrowserWindow {
+function createMainWindow(mainWindowState: ElectronWindowState.State): Electron.BrowserWindow {
   // Create the browser window.
   const newMainWindow = new BrowserWindow({
     ...mainWindowState,
@@ -561,7 +573,13 @@ function createWindow(mainWindowState: ElectronWindowState.State): Electron.Brow
     // newMainWindow.loadFile(path.join(__dirname, '../renderer/index.html'))
   }
 
-  createMenu()
+  mainWindowMenu = createMenu(defaultMainWidowMenyTemplate, !app.isPackaged)
+  mainWindowTray = createTray(
+    mainWindow,
+    defaultMainWindowTrayMenuTemplate,
+    getConfig('productName'),
+    staticAsset('assets/tray_icon.png')
+  )
 
   //change default shortcut for open devtools
   globalShortcut.register(DEFAULT_SHORTCUT_CONSOLE, () => {

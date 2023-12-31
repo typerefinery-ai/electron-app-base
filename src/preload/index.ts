@@ -30,7 +30,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const replaceWith: string = process.versions[dependency] || ''
     replaceText(`${dependency}-version`, replaceWith)
   }
-  
+
 })
 
 console.log('api ipc')
@@ -86,3 +86,9 @@ if (process.contextIsolated) {
     window['api'][channel] = method.call.bind(method)
   })
 }
+
+//dark mode
+contextBridge.exposeInMainWorld('darkMode', {
+  toggle: () => ipcRenderer.invoke('dark-mode:toggle'),
+  system: () => ipcRenderer.invoke('dark-mode:system')
+})

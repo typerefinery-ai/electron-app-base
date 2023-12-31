@@ -1,20 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BrowserView, BrowserWindow } from 'electron'
 import * as config from '../../package.json'
 import portfinder from 'portfinder'
 import child_process, { type SpawnOptions } from 'node:child_process'
 import fs from 'fs'
 import http, { type RequestOptions } from 'node:http'
-
-//open devtools in a window
-export function DEVTOOLS(win: BrowserView | BrowserWindow): void {
-  const isOpen = win.webContents.isDevToolsOpened()
-  if (isOpen) {
-    win.webContents.closeDevTools()
-  } else {
-    win.webContents.openDevTools()
-  }
-}
 
 export function tryParseInt(text: string, defaultValue: number): number {
   try {
