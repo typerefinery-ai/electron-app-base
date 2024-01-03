@@ -1,12 +1,15 @@
 :root {
+
+  //vars passed from electron app
+  --title-bar-color: env(window-titlebar-color, #0072c6);
+  --window-background-color: env(window-background-color, white);
+  --window-color: env(window-color, black);
+
+
   --debug-border: 0px dashed red;
   --fallback-title-bar-height: 37px;
   --footer-bar-height: 26px;
   --fallback-menu-bar-height: 25px;
-  --title-bar-color: #0072c6;
-
-  --window-background-color: #ddd;
-  --window-color: black;
 
   --element-padding: 3px;
   --env-titlebar-area-y: env(titlebar-area-y, 0);
@@ -28,14 +31,14 @@
 
   color-scheme: light dark;
 
-
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --title-bar-color: unset;
-    --window-background-color: #333;
-    --window-color: white;
+    //vars passed from electron app
+    --title-bar-color: env(window-titlebar-color-dark, #0072c6);
+    --window-background-color: env(window-background-color-dark, #333);
+    --window-color: env(window-color-dark, white);
   }
 }
 
@@ -68,4 +71,6 @@
 @import 'css/asideleft.scss';
 @import 'css/asideright.scss';
 
+// controls
+@import 'css/windowcontrols-checkboxslider.scss';
 
