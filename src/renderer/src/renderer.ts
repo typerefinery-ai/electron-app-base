@@ -227,6 +227,17 @@ function ready(document): void {
     }
   })
 
+  document.getElementById('windowdarkmodetoggle').addEventListener('change', async (el) => {
+    if (el.target.checked) {
+      console.log('Checkbox is checked..')
+    } else {
+      console.log('Checkbox is not checked..')
+    }
+    if (window['darkMode']) {
+      await window.darkMode.toggle()
+    }
+  })
+
   console.log('loaded home.ts')
 }
 
