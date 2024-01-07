@@ -32,8 +32,13 @@ export class SplitUtils {
 
   $contentleft
   $contentleftbody
+  $contentlefttabs
+  $contentleftaddressbar
+
   $contentright
   $contentrightbody
+  $contentrighttabs
+  $contentrightaddressbar
 
   $
   gridMain
@@ -73,8 +78,13 @@ export class SplitUtils {
 
     this.$contentleft = $('.contentleft')
     this.$contentleftbody = $('.contentleft .contentbody')
+    this.$contentlefttabs = $('.contentleft .contenttabs')
+    this.$contentleftaddressbar = $('.contentleft .contentaddress')
+
     this.$contentright = $('.contentright')
     this.$contentrightbody = $('.contentright .contentbody')
+    this.$contentrighttabs = $('.contentright .contenttabs')
+    this.$contentrightaddressbar = $('.contentright .contentaddress')
   }
 
   get LeftAside(): any {
@@ -156,14 +166,44 @@ export class SplitUtils {
   get ContentLeftBodyEl(): any {
     return this.$contentleftbody[0]
   }
+  get ContentLeftBody(): any {
+    return this.$contentleftbody
+  }
+  get ContentLeftTabs(): any {
+    return this.$contentlefttabs
+  }
+  get ContentLeftTabsEl(): any {
+    return this.$contentlefttabs[0]
+  }
+  get ContentLeftAddressBar(): any {
+    return this.$contentleftaddressbar
+  }
+  get ContentLeftAddressBarEl(): any {
+    return this.$contentleftaddressbar[0]
+  }
   get ContentRight(): any {
     return this.$contentright
   }
   get ContentRightEl(): any {
     return this.$contentright[0]
   }
+  get ContentRightBody(): any {
+    return this.$contentrightbody
+  }
   get ContentRightBodyEl(): any {
     return this.$contentrightbody[0]
+  }
+  get ContentRightTabs(): any {
+    return this.$contentrighttabs
+  }
+  get ContentRightTabsEl(): any {
+    return this.$contentrighttabs[0]
+  }
+  get ContentRightAddressBar(): any {
+    return this.$contentrightaddressbar
+  }
+  get ContentRightAddressBarEl(): any {
+    return this.$contentrightaddressbar[0]
   }
 
   get WindowFocusToggle(): any {
