@@ -8,7 +8,9 @@ import {
   Menu,
   globalShortcut,
   crashReporter,
-  type BrowserWindowConstructorOptions
+  systemPreferences,
+  type BrowserWindowConstructorOptions,
+  nativeTheme
 } from 'electron'
 import path from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -17,7 +19,16 @@ import { BrowserViewManager } from './BrowserViewManager'
 import { MenuItemConstructorOptions, MenuItem } from 'electron/main'
 import { type AppIPC, sharedAppIpc, IPCMethod } from '../preload/ipc'
 import { getConfig, getEnvConfigWithDefault, tryParseInt } from './Utils'
-import { DEVTOOLS, createMenu, createTray } from './ElectronUtils'
+import {
+  DEVTOOLS,
+  WINDOW_TITLE_BAR_OVERLAY,
+  WINDOW_TITLE_BAR_OVERLAY_HEIGHT,
+  createMenu,
+  createTray,
+  getNativeThemeConfig,
+  getTitleBarOverlayOptions,
+  handleDarkmode
+} from './ElectronUtils'
 import { Logger } from './Logger'
 import i18n from './i18n'
 import log from 'electron-log'
@@ -106,12 +117,7 @@ const defaultMainWindowOptions: BrowserWindowConstructorOptions = {
   // frame: false, // frameless window=true
   show: false, // show when created?
   //autoHideMenuBar: true,
-  // titleBarOverlay: true,
-  titleBarOverlay: {
-    color: '#0072c6',
-    symbolColor: '#fff',
-    height: 36
-  },
+  titleBarOverlay: true,
   titleBarStyle: 'hidden',
   ...(process.platform === 'linux' ? { icon } : {}),
   webPreferences: {
@@ -213,6 +219,26 @@ app.whenReady().then(() => {
     // app.setAppUserModelId(getConfig('productName'))
   }
 
+  nativeTheme.on('updated', () => {
+    const nativeThemeConfig = getNativeThemeConfig()
+    //get titlebar optons based on system config
+    const titleBarOverlay = getTitleBarOverlayOptions(WINDOW_TITLE_BAR_OVERLAY_HEIGHT)
+
+    console.log('theme updated ', titleBarOverlay)
+
+    const windows = BrowserWindow.getAllWindows()
+    windows.forEach((window) => {
+      window.webContents.send('theme-changed', nativeThemeConfig)
+      window.setTitleBarOverlay(titleBarOverlay)
+      console.log('window updated', window.title)
+    })
+  })
+
+  //gpu-process-crashed
+  app.on('child-process-gone', (event, details) => {
+    console.log('child-process-gone')
+  })
+
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
@@ -229,6 +255,9 @@ app.whenReady().then(() => {
 
   // create the app window
   mainWindow = createMainWindow(mainWindowState)
+
+  addIpcEvents(mainWindow)
+  handleDarkmode()
 
   createSplashWindow()
 
@@ -518,10 +547,14 @@ function createMainWindow(mainWindowState: ElectronWindowState.State): Electron.
     ...defaultMainWindowOptions
   })
 
+  if (WINDOW_TITLE_BAR_OVERLAY) {
+    newMainWindow.setTitleBarOverlay(getTitleBarOverlayOptions(WINDOW_TITLE_BAR_OVERLAY_HEIGHT))
+  }
   // create instance of tabsManager
   browserViewManager = new BrowserViewManager(newMainWindow, HOME_MAX_HEIGHT)
 
   newMainWindow.webContents.on('did-finish-load', () => {
+    newMainWindow.webContents.send('theme-changed', getNativeThemeConfig())
     console.log('did-finish-load')
     // setupView('https://electronjs.org');
     // setupViewLocal('local.html');
@@ -557,6 +590,10 @@ function createMainWindow(mainWindowState: ElectronWindowState.State): Electron.
   newMainWindow.on('ready-to-show', () => {
     //show window when its ready to show
     //newMainWindow?.show()
+  })
+
+  newMainWindow.webContents.on('render-process-gone', (event, details) => {
+    console.log('webcontent crashed')
   })
 
   newMainWindow.webContents.setWindowOpenHandler((details) => {

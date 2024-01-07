@@ -4,7 +4,7 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: unknown
-    darkMode: unknown
+    darkMode: DarkModeIPC
     appEnvironment: unknown
   }
 }

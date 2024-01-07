@@ -16,7 +16,7 @@
 
 .windowcontrols {
   flex-grow: 1;
-  color: white;
+  // color: var(--window-color);
   -webkit-app-region: drag;
   display: flex;
   justify-content: flex-end;

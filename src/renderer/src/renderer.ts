@@ -228,15 +228,19 @@ function ready(document): void {
   })
 
   document.getElementById('windowdarkmodetoggle').addEventListener('change', async (el) => {
-    if (el.target.checked) {
-      console.log('Checkbox is checked..')
-    } else {
-      console.log('Checkbox is not checked..')
-    }
     if (window['darkMode']) {
-      await window.darkMode.toggle()
+      if (el.target.value === '1') {
+        console.log('Theme Light')
+        await window.darkMode.light()
+      } else if (el.target.value === '2') {
+        console.log('Theme Default')
+        await window.darkMode.system()
+      } else if (el.target.value === '3') {
+        console.log('Theme Dark')
+        await window.darkMode.dark()
+      }
     }
-  })
+})
 
   console.log('loaded home.ts')
 }

@@ -13,15 +13,15 @@ body {
 
 @media (prefers-color-scheme: dark) {
   body {
-    background: #333;
-    color: white;
+    background: var(--window-background-color);
+    color: var(--window-color);
   }
 }
 
 @media (prefers-color-scheme: light) {
   body {
-    background: #ddd;
-    color: black;
+    background: var(--window-background-color);
+    color: var(--window-color);
   }
 }
 

@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { type AppIPC, sharedAppIpc } from './ipc'
+import { NativeThemeConfig } from '../main/ElectronUtils'
 
 export interface AppEnvironment {
   platform: typeof process.platform
@@ -30,10 +31,35 @@ window.addEventListener('DOMContentLoaded', () => {
     const replaceWith: string = process.versions[dependency] || ''
     replaceText(`${dependency}-version`, replaceWith)
   }
-
 })
 
 console.log('api ipc')
+
+ipcRenderer.on('theme-changed', (event, options: NativeThemeConfig) => {
+  console.log('theme-changed', event, options)
+  document.documentElement.style.setProperty(
+    '--window-title-bar-color-light',
+    options.windowTitleBarColorLight
+  )
+  document.documentElement.style.setProperty(
+    '--window-title-bar-color-dark',
+    options.windowTitleBarColorDark
+  )
+  document.documentElement.style.setProperty(
+    '--window-title-bar-color',
+    options.windowTitleBarColor
+  )
+  document.documentElement.style.setProperty(
+    '--window-title-bar-text-color',
+    options.windowTitleBarTextColor
+  )
+  document.documentElement.style.setProperty('--window-accent-color', options.windowAccentColor)
+  document.documentElement.style.setProperty(
+    '--window-background-color',
+    options.windowBackgroundColor
+  )
+  document.documentElement.style.setProperty('--window-color', options.windowColor)
+})
 
 contextBridge.exposeInMainWorld('api', {
   request: (channel: string, data: object) => {
@@ -62,6 +88,7 @@ console.log([
 // just add to the DOM global.
 if (process.contextIsolated) {
   try {
+    console.log('process.contextIsolated start')
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld(
       'ipc',
@@ -72,11 +99,12 @@ if (process.contextIsolated) {
       )
     )
     contextBridge.exposeInMainWorld('appEnvironment', appEnvironment)
+    console.log('process.contextIsolated loaded')
   } catch (error) {
     console.error(error)
   }
 } else {
-  console.log('window contextBridge')
+  console.log('window contextBridge start')
   // @ts-ignore (define in dts)
   window.electron = electronAPI
   // @ts-ignore (define in dts)
@@ -85,10 +113,13 @@ if (process.contextIsolated) {
   Object.entries(sharedAppIpc).forEach(([channel, method]) => {
     window['api'][channel] = method.call.bind(method)
   })
+  console.log('window contextBridge loaded')
 }
 
 //dark mode
 contextBridge.exposeInMainWorld('darkMode', {
   toggle: () => ipcRenderer.invoke('dark-mode:toggle'),
-  system: () => ipcRenderer.invoke('dark-mode:system')
+  system: () => ipcRenderer.invoke('dark-mode:system'),
+  light: () => ipcRenderer.invoke('dark-mode:light'),
+  dark: () => ipcRenderer.invoke('dark-mode:dark')
 })

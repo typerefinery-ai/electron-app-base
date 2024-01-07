@@ -3,9 +3,7 @@
   top: var(--env-titlebar-area-y);
   height: var(--env-titlebar-area-height);
   width: 100%;
-  background-color: var(--title-bar-color);
-
-
+  background-color: var(--window-title-bar-color);
 
   .windowtitlebar {
     display: flex;
@@ -26,13 +24,13 @@
       flex-grow: 2;
       max-height: 20px;
       width: auto;
-      font: 12px/20px "Segoe UI", Arial, sans-serif;
-      color: #fff;
+      font: var(--window-title-bar-font);
+      color: var(--window-title-bar-text-color);
       margin-left: 10px;
     }
     .ui-btn {
       margin: 0;
-      width: var(--title-bar-button-width);
+      width: var(--window-title-bar-button-width);
       height:100%;
       border: 0;
       outline: 0;
@@ -43,15 +41,15 @@
       align-items: center;
     }
     .ui-btn:hover {
-      background: rgba(255,255,255,.1);
+      background: var(--window-title-bar-button-color-hover);
     }
-    .ui-btn.close:hover {
-      background: #e81123;
-    }
+    // .ui-btn.close:hover {
+    //   background: #e81123;
+    // }
     .ui-btn svg path,
     .ui-btn svg rect,
     .ui-btn svg polygon {
-      fill: #fff;
+      fill: var(--window-accent-color) !important;
     }
     .ui-btn svg {
       width: 40%;

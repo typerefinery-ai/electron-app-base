@@ -1,0 +1,37 @@
+.checkboxslidertri {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
+  > .switchtri {
+    height: 20px;
+    position: relative;
+    display: inline-block;
+
+    > input {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 20px;
+      width: 40px;
+      background: linear-gradient(to left, var(--theme-color-dark), 50%, var(--theme-color-light) 0%);
+      -webkit-border-radius: 25px;
+      border-radius: 25px;
+      padding: 0 2px;
+      margin: 0;
+      cursor: pointer;
+    }
+    > input::-webkit-slider-thumb {
+      background-color: var(--window-accent-color);
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      -webkit-border-radius: 25px;
+      border-radius: 25px;
+    }
+    > input:focus {
+      outline: none;
+    }
+  }
+}

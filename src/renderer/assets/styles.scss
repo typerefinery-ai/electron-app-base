@@ -1,10 +1,13 @@
 :root {
 
   //vars passed from electron app
-  --title-bar-color: env(window-titlebar-color, #0072c6);
-  --window-background-color: env(window-background-color, white);
-  --window-color: env(window-color, black);
+  // --window-accent-color: #e8e8e8;
+  // --window-title-bar-color: #e8e8e8;
+  // --window-background-color: #f9f9f9;
+  // --window-color: #1a1a1a;
 
+  --window-title-bar-button-color-hover: rgba(255,255,255,.1);
+  --window-title-bar-font: 12px/20px "Segoe UI", Arial, sans-serif;
 
   --debug-border: 0px dashed red;
   --fallback-title-bar-height: 37px;
@@ -16,9 +19,9 @@
   --env-titlebar-area-x: env(titlebar-area-x, 0);
   --env-titlebar-area-height: calc(env(titlebar-area-height, var(--fallback-title-bar-height)) + 1px );
   --env-titlebar-area-width: env(titlebar-area-width, 100%);
-  --title-bar-button-width: 50px;
-  --title-bar-button-width-default: env(titlebar-area-width, calc(100vw - ( var(--title-bar-button-width) * 3) ));
-  --title-bar-button-width-calc: calc((100vw - var(--title-bar-button-width-default)) / 3);
+  --window-title-bar-button-width: 50px;
+  --window-title-bar-button-width-default: env(titlebar-area-width, calc(100vw - ( var(--window-title-bar-button-width) * 3) ));
+  --window-title-bar-button-width-calc: calc((100vw - var(--window-title-bar-button-width-default)) / 3);
 
 
   --focus-color: lightgreen;
@@ -31,14 +34,30 @@
 
   color-scheme: light dark;
 
+  --component-background-color: #ccc;
+
+  --theme-color-light: #ccc;
+  --theme-color-dark: #000;
+
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    //vars passed from electron app
+    // --window-accent-color: env(window-accent-color, #e8e8e8);
+    // --window-title-bar-color: env(window-titlebar-color, #e8e8e8);
+    // --window-background-color: env(window-background-color, #f9f9f9);
+    // --window-color: env(window-color, #1a1a1a);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     //vars passed from electron app
-    --title-bar-color: env(window-titlebar-color-dark, #0072c6);
-    --window-background-color: env(window-background-color-dark, #333);
-    --window-color: env(window-color-dark, white);
+    // --window-accent-color: env(window-accent-color, #202020);
+    // --window-title-bar-color: env(window-titlebar-color-dark, #202020);
+    // --window-background-color: env(window-background-color-dark, #272727);
+    // --window-color: env(window-color-dark, #ffffff);
   }
 }
 
@@ -72,5 +91,6 @@
 @import 'css/asideright.scss';
 
 // controls
-@import 'css/windowcontrols-checkboxslider.scss';
+// @import 'css/windowcontrols-checkboxslider.scss';
+@import 'css/windowcontrols-checkboxslidertri.scss';
 

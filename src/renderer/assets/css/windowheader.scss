@@ -28,20 +28,21 @@
 //   align-items: center;
 // }
 
-.window-hover:hover {
-  background: rgba(255,255,255,0.1);
-}
-.window-hover:hover:active {
-  background: rgba(255,255,255,0.2);
-}
+// buttons provided by OS
+// .window-hover:hover {
+//   background: rgba(255,255,255,0.1);
+// }
+// .window-hover:hover:active {
+//   background: rgba(255,255,255,0.2);
+// }
 
-.window-hover-close:hover {
-  background: #E81123 !important;
-}
-.window-hover-close:active {
-  background: #F1707A !important;
-}
-.window-hover-close:active .icon {
-  filter: invert(1);
-}
+// .window-hover-close:hover {
+//   background: #E81123 !important;
+// }
+// .window-hover-close:active {
+//   background: #F1707A !important;
+// }
+// .window-hover-close:active .icon {
+//   filter: invert(1);
+// }
 
