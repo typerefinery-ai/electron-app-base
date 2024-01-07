@@ -11,7 +11,7 @@ export function init(): void {
 function ready(document): void {
   console.log('loading home.ts')
 
-  // const { ipc } = window
+  const { ipc } = window
 
   const splitUtils = new SplitUtils($)
 
@@ -123,40 +123,111 @@ function ready(document): void {
         splitUtils.setVerticalFocus(true)
       }
 
-      // if (ipc && ipc.windowResize) {
-      //   ipc.windowResize({
-      //     left: {
-      //       x: splitUtils.ContentLeft.offset().top,
-      //       y: splitUtils.ContentLeft.offset().left,
-      //       width: splitUtils.ContentLeft.width(),
-      //       height: splitUtils.ContentLeft.height()
-      //     },
-      //     right: {
-      //       x: splitUtils.ContentRight.offset().top,
-      //       y: splitUtils.ContentRight.offset().left,
-      //       width: splitUtils.ContentRight.width(),
-      //       height: splitUtils.ContentRight.height()
-      //     },
-      //     gutter: {
-      //       x: splitUtils.Gutter.offset().top,
-      //       y: splitUtils.Gutter.offset().left,
-      //       width: splitUtils.Gutter.width(),
-      //       height: splitUtils.Gutter.height()
-      //     },
-      //     leftAside: {
-      //       x: splitUtils.LeftAside.offset().top,
-      //       y: splitUtils.LeftAside.offset().left,
-      //       width: splitUtils.LeftAside.width(),
-      //       height: splitUtils.LeftAside.height()
-      //     },
-      //     rightAside: {
-      //       x: splitUtils.RightAside.offset().top,
-      //       y: splitUtils.RightAside.offset().left,
-      //       width: splitUtils.RightAside.width(),
-      //       height: splitUtils.RightAside.height()
-      //     }
-      //   })
-      // }
+      if (ipc && ipc.windowResize) {
+        // console.log('ipc.windowResize')
+        const layout = {
+          left: {
+            x: splitUtils.ContentLeft.offset().top,
+            y: splitUtils.ContentLeft.offset().left,
+            width: splitUtils.ContentLeft.width(),
+            height: splitUtils.ContentLeft.height()
+          },
+          leftContent: {
+            x: splitUtils.ContentLeftBody.offset().top,
+            y: splitUtils.ContentLeftBody.offset().left,
+            width: splitUtils.ContentLeftBody.width(),
+            height: splitUtils.ContentLeftBody.height()
+          },
+          leftTabs: {
+            x: splitUtils.ContentLeftTabs.offset().top,
+            y: splitUtils.ContentLeftTabs.offset().left,
+            width: splitUtils.ContentLeftTabs.width(),
+            height: splitUtils.ContentLeftTabs.height()
+          },
+          leftAddressBar: {
+            x: splitUtils.ContentLeftAddressBar.offset().top,
+            y: splitUtils.ContentLeftAddressBar.offset().left,
+            width: splitUtils.ContentLeftAddressBar.width(),
+            height: splitUtils.ContentLeftAddressBar.height()
+          },
+          right: {
+            x: splitUtils.ContentRight.offset().top,
+            y: splitUtils.ContentRight.offset().left,
+            width: splitUtils.ContentRight.width(),
+            height: splitUtils.ContentRight.height()
+          },
+          rightContent: {
+            x: splitUtils.ContentRightBody.offset().top,
+            y: splitUtils.ContentRightBody.offset().left,
+            width: splitUtils.ContentRightBody.width(),
+            height: splitUtils.ContentRightBody.height()
+          },
+          rightTabs: {
+            x: splitUtils.ContentRightTabs.offset().top,
+            y: splitUtils.ContentRightTabs.offset().left,
+            width: splitUtils.ContentRightTabs.width(),
+            height: splitUtils.ContentRightTabs.height()
+          },
+          rightAddressBar: {
+            x: splitUtils.ContentRightAddressBar.offset().top,
+            y: splitUtils.ContentRightAddressBar.offset().left,
+            width: splitUtils.ContentRightAddressBar.width(),
+            height: splitUtils.ContentRightAddressBar.height()
+          },
+          gutter: {
+            x: splitUtils.Gutter.offset().top,
+            y: splitUtils.Gutter.offset().left,
+            width: splitUtils.Gutter.width(),
+            height: splitUtils.Gutter.height()
+          },
+          leftAside: {
+            x: splitUtils.LeftAside.offset().top,
+            y: splitUtils.LeftAside.offset().left,
+            width: splitUtils.LeftAside.width(),
+            height: splitUtils.LeftAside.height()
+          },
+          rightAside: {
+            x: splitUtils.RightAside.offset().top,
+            y: splitUtils.RightAside.offset().left,
+            width: splitUtils.RightAside.width(),
+            height: splitUtils.RightAside.height()
+          }
+        }
+        console.log('ipc.windowResize', layout)
+        ipc.windowResize(layout)
+        //   ipc.windowResize({
+        //     left: {
+        //       x: splitUtils.ContentLeft.offset().top,
+        //       y: splitUtils.ContentLeft.offset().left,
+        //       width: splitUtils.ContentLeft.width(),
+        //       height: splitUtils.ContentLeft.height()
+        //     },
+        //     right: {
+        //       x: splitUtils.ContentRight.offset().top,
+        //       y: splitUtils.ContentRight.offset().left,
+        //       width: splitUtils.ContentRight.width(),
+        //       height: splitUtils.ContentRight.height()
+        //     },
+        //     gutter: {
+        //       x: splitUtils.Gutter.offset().top,
+        //       y: splitUtils.Gutter.offset().left,
+        //       width: splitUtils.Gutter.width(),
+        //       height: splitUtils.Gutter.height()
+        //     },
+        //     leftAside: {
+        //       x: splitUtils.LeftAside.offset().top,
+        //       y: splitUtils.LeftAside.offset().left,
+        //       width: splitUtils.LeftAside.width(),
+        //       height: splitUtils.LeftAside.height()
+        //     },
+        //     rightAside: {
+        //       x: splitUtils.RightAside.offset().top,
+        //       y: splitUtils.RightAside.offset().left,
+        //       width: splitUtils.RightAside.width(),
+        //       height: splitUtils.RightAside.height()
+        //     }
+        //   })
+      }
     }
   })
 
@@ -240,7 +311,7 @@ function ready(document): void {
         await window.darkMode.dark()
       }
     }
-})
+  })
 
   console.log('loaded home.ts')
 }
