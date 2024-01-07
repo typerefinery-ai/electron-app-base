@@ -15,7 +15,7 @@ import {
 import path from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.ico?asset'
-import { BrowserViewManager } from './BrowserViewManager'
+import { BrowserViewLayout, BrowserViewManager } from './BrowserViewManager'
 import { MenuItemConstructorOptions, MenuItem } from 'electron/main'
 import { type AppIPC, sharedAppIpc, IPCMethod } from '../preload/ipc'
 import { getConfig, getEnvConfigWithDefault, tryParseInt } from './Utils'
@@ -491,7 +491,28 @@ function addIpcEvents(window: BrowserWindow): void {
     getGlobalEnv(): any {
       logger.log(`ipc getGlobalEnv`)
       // return serviceManager.getGlobalEnv()
-    }
+    },
+    windowResize(layoutConfig: BrowserViewLayout): void {
+      console.log(`ipc main windowResize`, layoutConfig)
+    },
+    switchPageLeft(any): void {
+      logger.log(`ipc switchPageLeft`)
+    },
+    switchPageRight(any): void {
+      logger.log(`ipc switchPageRight`)
+    },
+    addTab(any): any {
+      logger.log(`ipc addTab`)
+    },
+    removeTab(any): any {
+      logger.log(`ipc removeTab`)
+    },
+    changeTheme(any): any {
+      logger.log(`ipc changeTheme`)
+    },
+    changeSettings(any): any {
+      logger.log(`ipc changeSettings`)
+    },
   }
 
   Object.values(sharedAppIpc).forEach((method) => method.clean())
@@ -593,7 +614,7 @@ function createMainWindow(mainWindowState: ElectronWindowState.State): Electron.
   })
 
   newMainWindow.webContents.on('render-process-gone', (event, details) => {
-    console.log('webcontent crashed')
+    console.log('webcontent crashed', event, details)
   })
 
   newMainWindow.webContents.setWindowOpenHandler((details) => {

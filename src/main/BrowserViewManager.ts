@@ -1,6 +1,20 @@
 import { BrowserView, ipcMain, globalShortcut } from 'electron'
 import path from 'path'
 
+export interface BrowserViewLayout {
+  left: BrowserViewSize
+  leftContent: BrowserViewSize
+  leftTabs: BrowserViewSize
+  leftAddressBar: BrowserViewSize
+  right: BrowserViewSize
+  rightContent: BrowserViewSize
+  rightTabs: BrowserViewSize
+  rightAddressBar: BrowserViewSize
+  gutter: BrowserViewSize
+  leftAside: BrowserViewSize
+  rightAside: BrowserViewSize
+}
+
 export interface BrowserViewSize {
   width: number
   height: number
