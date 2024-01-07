@@ -1,3 +1,5 @@
+import { ipcRenderer, ipcMain } from 'electron'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class IPCMethod<A extends any[], R> {
   readonly #channel: string
@@ -8,7 +10,6 @@ export class IPCMethod<A extends any[], R> {
   }
 
   async call(...args: A): Promise<R> {
-    const { ipcRenderer } = await import('electron')
     const resolveChannel = String(IPCMethod.#CHANNEL_GEN++)
     const rejectChannel = String(IPCMethod.#CHANNEL_GEN++)
     const promise = new Promise<R>((resolve, reject) => {
@@ -22,7 +23,6 @@ export class IPCMethod<A extends any[], R> {
   readonly #cleanupFunctions: (() => void)[] = []
 
   async implement(impl: (...args: A) => R | Promise<R>): Promise<void> {
-    const { ipcMain } = await import('electron')
     async function listener(
       event: Electron.IpcMainEvent,
       resolveChannel: string,
@@ -69,13 +69,13 @@ export const sharedAppIpc = {
   getAppDataPath: new IPCMethod<[string], any[]>('getAppDataPath'),
   getGlobalEnv: new IPCMethod<[], any[]>('getGlobalEnv'),
   getEnv: new IPCMethod<[], any[]>('getEnv'),
-  windowResize: new IPCMethod<[number, number], any[]>('windowResize'),
-  switchPageLeft: new IPCMethod<[any], any[]>('switchPageLeft'),
-  switchPageRight: new IPCMethod<[any], any[]>('switchPageRight'),
-  addTab: new IPCMethod<[any], any[]>('switchPageRight'),
-  removeTab: new IPCMethod<[any], any[]>('switchPageRight'),
-  changeTheme: new IPCMethod<[any], any[]>('switchPageRight'),
-  changeSettings: new IPCMethod<[any], any[]>('switchPageRight')
+  windowResize: new IPCMethod<[any], void>('windowResize'),
+  switchPageLeft: new IPCMethod<[any], void>('switchPageLeft'),
+  switchPageRight: new IPCMethod<[any], void>('switchPageRight'),
+  addTab: new IPCMethod<[any], any[]>('addTab'),
+  removeTab: new IPCMethod<[any], any[]>('removeTab'),
+  changeTheme: new IPCMethod<[any], any[]>('changeTheme'),
+  changeSettings: new IPCMethod<[any], any[]>('changeSettings')
 }
 
 export type AppIPC = {
