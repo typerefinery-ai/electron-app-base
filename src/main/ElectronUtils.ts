@@ -18,7 +18,7 @@ export const WINDOW_TITLE_BAR_OVERLAY_SYMBOL_COLOR = '#ffffff'
 export const WINDOW_TITLE_BAR_OVERLAY_SYMBOL_COLOR_DARK = '#1a1a1a'
 export const WINDOW_COLOR = '#f9f9f9'
 export const WINDOW_COLOR_DARK = '#3b3b3b'
-export const WINDOW_TITLE_BAR_OVERLAY_HEIGHT = 35
+export const WINDOW_TITLE_BAR_OVERLAY_HEIGHT_PIXELS = 35
 export const WINDOW_TITLE_BAR_OVERLAY = true
 export const COLOR_LIGHT = '#ffffff'
 export const COLOR_DARK = '#000000'
@@ -109,6 +109,7 @@ export interface NativeThemeConfig {
   windowTitleBarTextColor: string
   windowColor: string
   windowBackgroundColor: string
+  windowTitleBarHeight: string
 }
 
 export function getNativeThemeConfig(): NativeThemeConfig {
@@ -144,7 +145,8 @@ export function getNativeThemeConfig(): NativeThemeConfig {
       systemPreferences.getColor('window') || systemPreferences.getColor('window-background'),
       WINDOW_COLOR,
       WINDOW_COLOR_DARK
-    )
+    ),
+    windowTitleBarHeight: WINDOW_TITLE_BAR_OVERLAY_HEIGHT_PIXELS + 'px'
   }
 
   return nativeThemeConfig

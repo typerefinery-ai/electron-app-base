@@ -15,14 +15,19 @@ import {
 import path from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.ico?asset'
-import { BrowserViewLayout, BrowserViewManager } from './BrowserViewManager'
+import {
+  BrowserViewLayout,
+  BrowserViewManager,
+  BrowserViewDeck,
+  KeyValuePair
+} from './BrowserViewManager'
 import { MenuItemConstructorOptions, MenuItem } from 'electron/main'
 import { type AppIPC, sharedAppIpc, IPCMethod } from '../preload/ipc'
 import { getConfig, getEnvConfigWithDefault, tryParseInt } from './Utils'
 import {
   DEVTOOLS,
   WINDOW_TITLE_BAR_OVERLAY,
-  WINDOW_TITLE_BAR_OVERLAY_HEIGHT,
+  WINDOW_TITLE_BAR_OVERLAY_HEIGHT_PIXELS,
   createMenu,
   createTray,
   getNativeThemeConfig,
@@ -46,7 +51,6 @@ import dotenv, { config } from 'dotenv'
 import { updateElectronApp, UpdateSourceType } from 'update-electron-app'
 
 //height of the home bar
-const HOME_MAX_HEIGHT = 36
 const DEFAULT_SHORTCUT_CONSOLE = 'CmdOrCtrl+Alt+I'
 
 // tarack when the main window is closing
@@ -61,8 +65,11 @@ let browserViewManager: BrowserViewManager
 let mainWindowMenu: Menu //create and update app menu
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let mainWindowTray: Tray //create and update app tray icon
+let mainLayoutConfig: BrowserViewLayout
 
+const MAIN_WINDOW_FILE = '../renderer/index.html'
 const SCRIPT_PRELOAD = path.join(__dirname, '../preload/index.js')
+const SCRIPT_PRELOAD_TRUSTED = path.join(__dirname, '../preload/trusted.js')
 const VITE_DEV_SERVER_HOST = getEnvConfigWithDefault('VITE_DEV_SERVER_HOST', 'localhost')
 const VITE_DEV_SERVER_PORT: number = tryParseInt(
   getEnvConfigWithDefault('VITE_DEV_SERVER_PORT', '3000'),
@@ -219,21 +226,6 @@ app.whenReady().then(() => {
     // app.setAppUserModelId(getConfig('productName'))
   }
 
-  nativeTheme.on('updated', () => {
-    const nativeThemeConfig = getNativeThemeConfig()
-    //get titlebar optons based on system config
-    const titleBarOverlay = getTitleBarOverlayOptions(WINDOW_TITLE_BAR_OVERLAY_HEIGHT)
-
-    console.log('theme updated ', titleBarOverlay)
-
-    const windows = BrowserWindow.getAllWindows()
-    windows.forEach((window) => {
-      window.webContents.send('theme-changed', nativeThemeConfig)
-      window.setTitleBarOverlay(titleBarOverlay)
-      console.log('window updated', window.title)
-    })
-  })
-
   //gpu-process-crashed
   app.on('child-process-gone', (event, details) => {
     console.log('child-process-gone')
@@ -249,7 +241,7 @@ app.whenReady().then(() => {
 
   // set default window state
   mainWindowState = ElectronWindowState({
-    defaultHeight: +getConfig('appHeight'),
+    defaultHeight: getConfig('appHeight'),
     defaultWidth: getConfig('appWidth')
   })
 
@@ -257,6 +249,84 @@ app.whenReady().then(() => {
   mainWindow = createMainWindow(mainWindowState)
 
   addIpcEvents(mainWindow)
+
+  const initDecksConfig: BrowserViewDeck[] = [
+    {
+      layout: 'leftContent',
+      name: 'leftContent',
+      backgroundColor: 'lightblue',
+      scrollbars: true,
+      initFile: staticAsset('loader/leftContent.html')
+    },
+    {
+      layout: 'leftTabs',
+      name: 'leftTabs',
+      backgroundColor: 'lightgreen',
+      initFile: staticAsset('loader/leftTabs.html')
+    },
+    {
+      layout: 'leftAddressBar',
+      name: 'leftAddressBar',
+      backgroundColor: 'lightpink',
+      initFile: staticAsset('loader/leftAddressBar.html')
+    },
+    {
+      layout: 'rightContent',
+      name: 'rightContent',
+      backgroundColor: 'lightyellow',
+      scrollbars: true,
+      initFile: staticAsset('loader/rightContent.html')
+    },
+    {
+      layout: 'rightTabs',
+      name: 'rightTabs',
+      backgroundColor: 'lightpurple',
+      initFile: staticAsset('loader/rightTabs.html')
+    },
+    {
+      layout: 'rightAddressBar',
+      name: 'rightAddressBar',
+      backgroundColor: 'lightred',
+      initFile: staticAsset('loader/rightAddressBar.html')
+    },
+    {
+      layout: 'gutter',
+      name: 'gutter',
+      backgroundColor: 'lightorange',
+      initFile: staticAsset('loader/gutter.html')
+    },
+    {
+      layout: 'leftAside',
+      name: 'leftAside',
+      backgroundColor: 'lightbrown',
+      initFile: staticAsset('loader/leftAside.html')
+    },
+    {
+      layout: 'rightAside',
+      name: 'right',
+      backgroundColor: 'lightblue',
+      initFile: staticAsset('loader/rightAside.html')
+    },
+    {
+      layout: 'footer',
+      name: 'footer',
+      scrollbars: false,
+      backgroundColor: 'lightgray',
+      initFile: staticAsset('loader/footer.html')
+    }
+  ]
+
+  const preloadScripts: KeyValuePair = {
+    default: SCRIPT_PRELOAD,
+    public: SCRIPT_PRELOAD,
+    trusted: SCRIPT_PRELOAD_TRUSTED
+  }
+
+  // create instance of tabsManager
+  browserViewManager = new BrowserViewManager(preloadScripts)
+  // init stacks
+  browserViewManager.init(mainWindow, initDecksConfig)
+
   handleDarkmode()
 
   createSplashWindow()
@@ -271,6 +341,28 @@ app.whenReady().then(() => {
       //focus first window
       allWindows[0].focus()
     }
+  })
+
+  //monitor system theme changes to theme config
+  nativeTheme.on('updated', () => {
+    const nativeThemeConfig = getNativeThemeConfig()
+    //get titlebar optons based on system config
+    const titleBarOverlay = getTitleBarOverlayOptions(WINDOW_TITLE_BAR_OVERLAY_HEIGHT_PIXELS)
+
+    console.log('theme updated ', titleBarOverlay)
+
+    if (browserViewManager) {
+      browserViewManager.themeChanged(nativeThemeConfig)
+    }
+
+    mainWindow.setTitleBarOverlay(titleBarOverlay)
+
+    // const windows = BrowserWindow.getAllWindows()
+    // windows.forEach((window) => {
+    //   window.webContents.send('theme-changed', nativeThemeConfig)
+    //   window.setTitleBarOverlay(titleBarOverlay)
+    //   console.log('window updated', window.title)
+    // })
   })
 
   mainWindow.on('close', function (e) {
@@ -368,7 +460,6 @@ ipcMain.on('menu-click', (e, action) => {
 
 //   loadResource(childWindow, "../index.html", arg)
 // })
-
 
 function addIpcEvents(window: BrowserWindow): void {
   const ipcImplementation: AppIPC = {
@@ -493,7 +584,9 @@ function addIpcEvents(window: BrowserWindow): void {
       // return serviceManager.getGlobalEnv()
     },
     windowResize(layoutConfig: BrowserViewLayout): void {
-      console.log(`ipc main windowResize`, layoutConfig)
+      // logger.log(`ipc main windowResize`, layoutConfig)
+      mainLayoutConfig = layoutConfig
+      browserViewManager.resize(layoutConfig)
     },
     switchPageLeft(any): void {
       logger.log(`ipc switchPageLeft`)
@@ -512,7 +605,7 @@ function addIpcEvents(window: BrowserWindow): void {
     },
     changeSettings(any): any {
       logger.log(`ipc changeSettings`)
-    },
+    }
   }
 
   Object.values(sharedAppIpc).forEach((method) => method.clean())
@@ -569,10 +662,8 @@ function createMainWindow(mainWindowState: ElectronWindowState.State): Electron.
   })
 
   if (WINDOW_TITLE_BAR_OVERLAY) {
-    newMainWindow.setTitleBarOverlay(getTitleBarOverlayOptions(WINDOW_TITLE_BAR_OVERLAY_HEIGHT))
+    newMainWindow.setTitleBarOverlay(getTitleBarOverlayOptions(WINDOW_TITLE_BAR_OVERLAY_HEIGHT_PIXELS))
   }
-  // create instance of tabsManager
-  browserViewManager = new BrowserViewManager(newMainWindow, HOME_MAX_HEIGHT)
 
   newMainWindow.webContents.on('did-finish-load', () => {
     newMainWindow.webContents.send('theme-changed', getNativeThemeConfig())
@@ -595,11 +686,12 @@ function createMainWindow(mainWindowState: ElectronWindowState.State): Electron.
   })
 
   newMainWindow.on('resize', () => {
-    browserViewManager.resize(newMainWindow.getBounds())
-    newMainWindow.getBrowserViews().forEach((view) => {
-      //console.log(view.getBounds())
-      // resizeView(view)
-    })
+    //console.log('main window resieze', mainWindow.webContents['mainLayoutConfig'])
+    //browserViewManager.resize(newMainWindow.getBounds())
+    // newMainWindow.getBrowserViews().forEach((view) => {
+    //   //console.log(view.getBounds())
+    //   // resizeView(view)
+    // })
   })
 
   newMainWindow.on('closed', () => {
@@ -627,8 +719,7 @@ function createMainWindow(mainWindowState: ElectronWindowState.State): Electron.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     newMainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    loadResource(newMainWindow, '../renderer/index.html', '')
-    // newMainWindow.loadFile(path.join(__dirname, '../renderer/index.html'))
+    loadResource(newMainWindow, MAIN_WINDOW_FILE, '')
   }
 
   mainWindowMenu = createMenu(defaultMainWidowMenyTemplate, !app.isPackaged)
@@ -643,7 +734,6 @@ function createMainWindow(mainWindowState: ElectronWindowState.State): Electron.
   globalShortcut.register(DEFAULT_SHORTCUT_CONSOLE, () => {
     DEVTOOLS(mainWindow)
   })
-  browserViewManager.init()
 
   return newMainWindow
 }

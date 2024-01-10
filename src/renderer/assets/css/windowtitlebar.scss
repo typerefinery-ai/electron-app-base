@@ -22,11 +22,12 @@
     }
     .ui-titletext {
       flex-grow: 2;
-      max-height: 20px;
       width: auto;
       font: var(--window-title-bar-font);
       color: var(--window-title-bar-text-color);
       margin-left: 10px;
+      display: flex;
+      align-items: center;
     }
     .ui-btn {
       margin: 0;

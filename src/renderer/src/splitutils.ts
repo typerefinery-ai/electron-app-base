@@ -40,6 +40,8 @@ export class SplitUtils {
   $contentrighttabs
   $contentrightaddressbar
 
+  $footer
+
   $
   gridMain
   gridHorizontal
@@ -85,6 +87,8 @@ export class SplitUtils {
     this.$contentrightbody = $('.contentright .contentbody')
     this.$contentrighttabs = $('.contentright .contenttabs')
     this.$contentrightaddressbar = $('.contentright .contentaddress')
+
+    this.$footer = $('.windowfooter')
   }
 
   get LeftAside(): any {
@@ -204,6 +208,13 @@ export class SplitUtils {
   }
   get ContentRightAddressBarEl(): any {
     return this.$contentrightaddressbar[0]
+  }
+
+  get Footer(): any {
+    return this.$footer
+  }
+  get FooterEl(): any {
+    return this.$footer[0]
   }
 
   get WindowFocusToggle(): any {

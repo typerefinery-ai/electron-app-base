@@ -59,6 +59,11 @@ ipcRenderer.on('theme-changed', (event, options: NativeThemeConfig) => {
     options.windowBackgroundColor
   )
   document.documentElement.style.setProperty('--window-color', options.windowColor)
+  //set title bar height to a default, it will be first picked from titlebar-area-height
+  document.documentElement.style.setProperty(
+    '--window-title-bar-height',
+    options.windowTitleBarHeight
+  )
 })
 
 contextBridge.exposeInMainWorld('api', {

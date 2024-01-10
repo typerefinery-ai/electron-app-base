@@ -124,76 +124,87 @@ function ready(document): void {
       }
 
       if (ipc && ipc.windowResize) {
-        // console.log('ipc.windowResize')
+        // get title bar size from :root css variable --env-titlebar-area-height
+        const titleBarHeight = parseInt(
+          getComputedStyle(document.documentElement).getPropertyValue('--env-titlebar-area-height')
+        )
+
         const layout = {
           left: {
-            x: splitUtils.ContentLeft.offset().top,
-            y: splitUtils.ContentLeft.offset().left,
+            y: splitUtils.ContentLeft.offset().top,
+            x: splitUtils.ContentLeft.offset().left,
             width: splitUtils.ContentLeft.width(),
             height: splitUtils.ContentLeft.height()
           },
           leftContent: {
-            x: splitUtils.ContentLeftBody.offset().top,
-            y: splitUtils.ContentLeftBody.offset().left,
+            y: splitUtils.ContentLeftBody.offset().top,
+            x: splitUtils.ContentLeftBody.offset().left,
             width: splitUtils.ContentLeftBody.width(),
             height: splitUtils.ContentLeftBody.height()
           },
           leftTabs: {
-            x: splitUtils.ContentLeftTabs.offset().top,
-            y: splitUtils.ContentLeftTabs.offset().left,
+            y: splitUtils.ContentLeftTabs.offset().top,
+            x: splitUtils.ContentLeftTabs.offset().left,
             width: splitUtils.ContentLeftTabs.width(),
             height: splitUtils.ContentLeftTabs.height()
           },
           leftAddressBar: {
-            x: splitUtils.ContentLeftAddressBar.offset().top,
-            y: splitUtils.ContentLeftAddressBar.offset().left,
+            y: splitUtils.ContentLeftAddressBar.offset().top,
+            x: splitUtils.ContentLeftAddressBar.offset().left,
             width: splitUtils.ContentLeftAddressBar.width(),
             height: splitUtils.ContentLeftAddressBar.height()
           },
           right: {
-            x: splitUtils.ContentRight.offset().top,
-            y: splitUtils.ContentRight.offset().left,
+            y: splitUtils.ContentRight.offset().top,
+            x: splitUtils.ContentRight.offset().left,
             width: splitUtils.ContentRight.width(),
             height: splitUtils.ContentRight.height()
           },
           rightContent: {
-            x: splitUtils.ContentRightBody.offset().top,
-            y: splitUtils.ContentRightBody.offset().left,
+            y: splitUtils.ContentRightBody.offset().top,
+            x: splitUtils.ContentRightBody.offset().left,
             width: splitUtils.ContentRightBody.width(),
             height: splitUtils.ContentRightBody.height()
           },
           rightTabs: {
-            x: splitUtils.ContentRightTabs.offset().top,
-            y: splitUtils.ContentRightTabs.offset().left,
+            y: splitUtils.ContentRightTabs.offset().top,
+            x: splitUtils.ContentRightTabs.offset().left,
             width: splitUtils.ContentRightTabs.width(),
             height: splitUtils.ContentRightTabs.height()
           },
           rightAddressBar: {
-            x: splitUtils.ContentRightAddressBar.offset().top,
-            y: splitUtils.ContentRightAddressBar.offset().left,
+            y: splitUtils.ContentRightAddressBar.offset().top,
+            x: splitUtils.ContentRightAddressBar.offset().left,
             width: splitUtils.ContentRightAddressBar.width(),
             height: splitUtils.ContentRightAddressBar.height()
           },
           gutter: {
-            x: splitUtils.Gutter.offset().top,
-            y: splitUtils.Gutter.offset().left,
+            y: splitUtils.Gutter.offset().top,
+            x: splitUtils.Gutter.offset().left,
             width: splitUtils.Gutter.width(),
             height: splitUtils.Gutter.height()
           },
           leftAside: {
-            x: splitUtils.LeftAside.offset().top,
-            y: splitUtils.LeftAside.offset().left,
+            y: splitUtils.LeftAside.offset().top,
+            x: splitUtils.LeftAside.offset().left,
             width: splitUtils.LeftAside.width(),
             height: splitUtils.LeftAside.height()
           },
           rightAside: {
-            x: splitUtils.RightAside.offset().top,
-            y: splitUtils.RightAside.offset().left,
+            y: splitUtils.RightAside.offset().top,
+            x: splitUtils.RightAside.offset().left,
             width: splitUtils.RightAside.width(),
             height: splitUtils.RightAside.height()
+          },
+          footer: {
+            y: splitUtils.Footer.offset().top,
+            x: splitUtils.Footer.offset().left,
+            width: splitUtils.Footer.width(),
+            height: splitUtils.Footer.height()
           }
         }
         console.log('ipc.windowResize', layout)
+        window['mainLayoutConfig'] = layout
         ipc.windowResize(layout)
         //   ipc.windowResize({
         //     left: {

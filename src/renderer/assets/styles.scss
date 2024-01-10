@@ -5,19 +5,20 @@
   // --window-title-bar-color: #e8e8e8;
   // --window-background-color: #f9f9f9;
   // --window-color: #1a1a1a;
+  // --window-title-bar-height: 35px;
 
   --window-title-bar-button-color-hover: rgba(255,255,255,.1);
   --window-title-bar-font: 12px/20px "Segoe UI", Arial, sans-serif;
 
   --debug-border: 0px dashed red;
-  --fallback-title-bar-height: 37px;
+
   --footer-bar-height: 26px;
   --fallback-menu-bar-height: 25px;
 
   --element-padding: 3px;
   --env-titlebar-area-y: env(titlebar-area-y, 0);
   --env-titlebar-area-x: env(titlebar-area-x, 0);
-  --env-titlebar-area-height: calc(env(titlebar-area-height, var(--fallback-title-bar-height)) + 1px );
+  --env-titlebar-area-height: env(titlebar-area-height, var(--window-title-bar-height));
   --env-titlebar-area-width: env(titlebar-area-width, 100%);
   --window-title-bar-button-width: 50px;
   --window-title-bar-button-width-default: env(titlebar-area-width, calc(100vw - ( var(--window-title-bar-button-width) * 3) ));
@@ -29,7 +30,7 @@
   --url-secure-color: lightgreen;
   --url-notsecure-color: red;
   --main-height-offset: calc(var(--env-titlebar-area-height) + var(--footer-bar-height));
-  --main-top: calc(var(--env-titlebar-area-height) + 1px);
+  --main-top: var(--env-titlebar-area-height);
   --main-height: calc(100vh - var(--main-height-offset));
 
   color-scheme: light dark;
