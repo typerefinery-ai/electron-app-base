@@ -321,8 +321,8 @@ export class BrowserViewManager {
     let initSize: BrowserViewSize = {
       x: 0,
       y: 0,
-      width: 50,
-      height: 50
+      width: 0,
+      height: 0
     }
     if (this.#layoutConfig && this.#layoutConfig[`${deck.layout}`]) {
       initSize = this.#layoutConfig[`${deck.layout}`]
