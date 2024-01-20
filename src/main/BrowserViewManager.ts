@@ -1,6 +1,10 @@
 import { BrowserView, ipcMain, globalShortcut, BrowserWindow } from 'electron'
 import path from 'path'
-import { NativeThemeConfig, WINDOW_TITLE_BAR_OVERLAY_HEIGHT_PIXELS } from './ElectronUtils'
+import {
+  DEVTOOLS,
+  NativeThemeConfig,
+  WINDOW_TITLE_BAR_OVERLAY_HEIGHT_PIXELS
+} from './ElectronUtils'
 
 export interface BrowserViewLayout {
   left: BrowserViewSize
@@ -28,6 +32,8 @@ export interface OpenURL {
   url?: string
   file?: string
   focus?: boolean
+  trusted?: boolean
+  deckBackground?: boolean
 }
 
 export interface BrowserViewOptionsList {
@@ -38,6 +44,7 @@ export interface BrowserViewOptions {
   applicationUrl?: string
   applicationKey: string
   backgroundColor?: string
+  deckBackground?: boolean
   localFile?: string
   trusted?: boolean
   focus?: boolean
@@ -57,6 +64,8 @@ export interface BrowserViewDeck {
   initFile?: string
   scrollbars?: boolean
   backgroundColor?: string
+  trusted?: true
+  shortcutDevConsole?: string
   current?: BrowserViewOptions | null
   items?: BrowserViewOptionsList | null
 }
@@ -218,7 +227,10 @@ export class BrowserViewManager {
           ? this.#preloadScripts['trusted']
           : this.#preloadScripts['public'],
         sandbox: viewConfig.trusted ? false : true,
-        nodeIntegration: viewConfig.trusted ? true : false
+        nodeIntegration: viewConfig.trusted ? true : false,
+        contextIsolation: true,
+        spellcheck: true,
+        devTools: true
       }
     }
     const viewId = `${viewConfig.applicationKey}`
@@ -307,6 +319,8 @@ export class BrowserViewManager {
       applicationKey: `${deckName}-${countId}`,
       focus: openurl.focus,
       localFile: openurl.file,
+      deckBackground: openurl.deckBackground,
+      trusted: openurl.trusted,
       deck: deck
     })
   }
@@ -333,7 +347,25 @@ export class BrowserViewManager {
       size: initSize
     }
 
-    this.openUrlInDeck(deck.name, { url: deck.initUrl, file: deck.initFile })
+    if (deck.initUrl || deck.initFile) {
+      this.openUrlInDeck(deck.name, {
+        url: deck.initUrl,
+        file: deck.initFile,
+        trusted: deck.trusted,
+        deckBackground: true
+      })
+    }
+
+    //register console for deck
+    if (deck.shortcutDevConsole) {
+      globalShortcut.register(deck.shortcutDevConsole, () => {
+        return this.openDevConsoleForDeck(deck.name)
+      })
+    }
+  }
+
+  private openDevConsoleForDeck(deckName: string): void {
+    return DEVTOOLS(this.#browserViewDecks[`${deckName}`].current?.browserView)
   }
 
   public init(mainWindow: BrowserWindow, initDeck: BrowserViewDeck[]): void {
@@ -355,30 +387,30 @@ export class BrowserViewManager {
     // this.onCloseBrowserView()
   }
 
-  private onCreateBrowserView(): void {
-    ipcMain.on('create-browser-view', (_, arg) => {
-      this.createBrowserViewInDeck(arg)
-    })
-  }
-  private onChangeTabBrowserView(): void {
-    ipcMain.on('changetab-browser-view', (_, arg) => {
-      this.createBrowserViewInDeck(arg)
-    })
-  }
-  private onHomeBrowserView(): void {
-    ipcMain.on('home-browser-view', () => {
-      if (this.#lastBrowserView) {
-        this.removeBrowserView(this.#lastBrowserView)
-      }
-    })
-  }
-  private onCloseBrowserView(): void {
-    ipcMain.on('close-browser-view', (_, arg) => {
-      if (this.#browserViewList[`${arg.applicationKey}`]) {
-        this.removeBrowserView(this.#browserViewList[`${arg.applicationKey}`])
-        // this.browserViewList[`${arg.applicationKey}`].destroy()
-        delete this.#browserViewList[`${arg.applicationKey}`]
-      }
-    })
-  }
+  // private onCreateBrowserView(): void {
+  //   ipcMain.on('create-browser-view', (_, arg) => {
+  //     this.createBrowserViewInDeck(arg)
+  //   })
+  // }
+  // private onChangeTabBrowserView(): void {
+  //   ipcMain.on('changetab-browser-view', (_, arg) => {
+  //     this.createBrowserViewInDeck(arg)
+  //   })
+  // }
+  // private onHomeBrowserView(): void {
+  //   ipcMain.on('home-browser-view', () => {
+  //     if (this.#lastBrowserView) {
+  //       this.removeBrowserView(this.#lastBrowserView)
+  //     }
+  //   })
+  // }
+  // private onCloseBrowserView(): void {
+  //   ipcMain.on('close-browser-view', (_, arg) => {
+  //     if (this.#browserViewList[`${arg.applicationKey}`]) {
+  //       this.removeBrowserView(this.#browserViewList[`${arg.applicationKey}`])
+  //       // this.browserViewList[`${arg.applicationKey}`].destroy()
+  //       delete this.#browserViewList[`${arg.applicationKey}`]
+  //     }
+  //   })
+  // }
 }
