@@ -128,7 +128,7 @@ const defaultMainWindowOptions: BrowserWindowConstructorOptions = {
   titleBarStyle: 'hidden',
   ...(process.platform === 'linux' ? { icon } : {}),
   webPreferences: {
-    preload: SCRIPT_PRELOAD,
+    preload: SCRIPT_PRELOAD_TRUSTED,
     sandbox: false,
     nodeIntegration: true,
     contextIsolation: true,
@@ -256,12 +256,15 @@ app.whenReady().then(() => {
       name: 'leftContent',
       backgroundColor: 'lightblue',
       scrollbars: true,
+      trusted: true,
       initFile: staticAsset('loader/leftContent.html')
     },
     {
       layout: 'leftTabs',
       name: 'leftTabs',
       backgroundColor: 'lightgreen',
+      shortcutDevConsole: 'CmdOrCtrl+Alt+Shift+1',
+      trusted: true,
       initFile: staticAsset('loader/leftTabs.html')
     },
     {
@@ -588,23 +591,24 @@ function addIpcEvents(window: BrowserWindow): void {
       mainLayoutConfig = layoutConfig
       browserViewManager.resize(layoutConfig)
     },
-    switchPageLeft(any): void {
-      logger.log(`ipc switchPageLeft`)
+    switchPageLeft(config: never): void {
+      logger.log(`ipc switchPageLeft`, config)
     },
-    switchPageRight(any): void {
-      logger.log(`ipc switchPageRight`)
+    switchPageRight(config: never): void {
+      logger.log(`ipc switchPageRight`, config)
     },
-    addTab(any): any {
-      logger.log(`ipc addTab`)
+    addTab(config: never): void {
+      console.log(`ipc addTab`, config)
+      logger.log(`ipc addTab`, config)
     },
-    removeTab(any): any {
-      logger.log(`ipc removeTab`)
+    removeTab(config: never): void {
+      logger.log(`ipc removeTab`, config)
     },
-    changeTheme(any): any {
-      logger.log(`ipc changeTheme`)
+    changeTheme(config: never): void {
+      logger.log(`ipc changeTheme`, config)
     },
-    changeSettings(any): any {
-      logger.log(`ipc changeSettings`)
+    changeSettings(config: never): void {
+      logger.log(`ipc changeSettings`, config)
     }
   }
 
