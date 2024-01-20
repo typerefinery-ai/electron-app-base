@@ -2,11 +2,34 @@
 
 <head>
     <meta charset="UTF-8">
+    <!-- <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src * data:; font-src 'self' data:; connect-src *"
+  /> -->
 </head>
 
 <body>
-  Left Tabs
+  Left Tabs <button url="http://google.com">Google</button><button url="http://github.com">Github</button>
 </body>
 
+<script>
+onload = () => {
 
+  document.querySelectorAll('button').forEach((button) => {
+    console.log(button)
+    button.addEventListener('click', e => {
+      console.log(e.target)
+      var url = e.target.getAttribute("url");
+      console.log(url);
+      if (url !== "") {
+        if (window.ipc && window.ipc.addTab) {
+          console.log(`window.ipc.addTab(${url});`);
+          window.ipc.addTab(url);
+        }
+      }
+    });
+  });
+
+}
+</script>
 </html>
