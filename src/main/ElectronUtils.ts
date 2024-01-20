@@ -24,12 +24,14 @@ export const COLOR_LIGHT = '#ffffff'
 export const COLOR_DARK = '#000000'
 
 //open devtools in a window
-export function DEVTOOLS(win: BrowserView | BrowserWindow): void {
-  const isOpen = win.webContents.isDevToolsOpened()
-  if (isOpen) {
-    win.webContents.closeDevTools()
-  } else {
-    win.webContents.openDevTools()
+export function DEVTOOLS(win?: BrowserView | BrowserWindow): void {
+  if (win) {
+    const isOpen = win.webContents.isDevToolsOpened()
+    if (isOpen) {
+      win.webContents.closeDevTools()
+    } else {
+      win.webContents.openDevTools()
+    }
   }
 }
 
