@@ -63,19 +63,19 @@ export const sharedAppIpc = {
   restartService: new IPCMethod<[string], any[]>('restartService'),
   stopService: new IPCMethod<[string], any[]>('stopService'),
   startService: new IPCMethod<[string], any[]>('startService'),
-  startAll: new IPCMethod<[], any[]>('startAll'),
-  stopAll: new IPCMethod<[], any[]>('stopAll'),
+  startAll: new IPCMethod<[any], void>('startAll'),
+  stopAll: new IPCMethod<[any], void>('stopAll'),
   getAppPath: new IPCMethod<[string], any[]>('getAppPath'),
   getAppDataPath: new IPCMethod<[string], any[]>('getAppDataPath'),
   getGlobalEnv: new IPCMethod<[], any[]>('getGlobalEnv'),
   getEnv: new IPCMethod<[], any[]>('getEnv'),
   windowResize: new IPCMethod<[any], void>('windowResize'),
-  switchPageLeft: new IPCMethod<[any], void>('switchPageLeft'),
-  switchPageRight: new IPCMethod<[any], void>('switchPageRight'),
-  addTab: new IPCMethod<[any], any[]>('addTab'),
-  removeTab: new IPCMethod<[any], any[]>('removeTab'),
-  changeTheme: new IPCMethod<[any], any[]>('changeTheme'),
-  changeSettings: new IPCMethod<[any], any[]>('changeSettings')
+  switchPageLeft: new IPCMethod<[never], void>('switchPageLeft'),
+  switchPageRight: new IPCMethod<[never], void>('switchPageRight'),
+  addTab: new IPCMethod<[never], void>('addTab'),
+  removeTab: new IPCMethod<[never], void>('removeTab'),
+  changeTheme: new IPCMethod<[never], void>('changeTheme'),
+  changeSettings: new IPCMethod<[never], void>('changeSettings')
 }
 
 export type AppIPC = {
