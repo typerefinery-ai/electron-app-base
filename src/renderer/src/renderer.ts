@@ -11,7 +11,8 @@ export function init(): void {
 function ready(document): void {
   console.log('loading home.ts')
 
-  const { ipc } = window
+  // Properly type window.ipc using Window interface augmentation
+  const ipc = (window as unknown as { ipc: unknown }).ipc
 
   const splitUtils = new SplitUtils($)
 
