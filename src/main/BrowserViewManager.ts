@@ -1,10 +1,15 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { BrowserView, ipcMain, globalShortcut, BrowserWindow } from 'electron'
-import path from 'path'
 import {
   DEVTOOLS,
   NativeThemeConfig,
   WINDOW_TITLE_BAR_OVERLAY_HEIGHT_PIXELS
 } from './ElectronUtils'
+
+//interface BrowserViewDecks to keep track of browserViews for a deck layout
+export interface BrowserViewDecks {
+  [key: string]: BrowserViewDeck
+}
 
 export interface BrowserViewLayout {
   left: BrowserViewSize
@@ -70,7 +75,7 @@ export interface BrowserViewDeck {
   items?: BrowserViewOptionsList | null
 }
 
-export interface BrowserViewDecks {
+export interface BroBrowserViewManagerwserViewDecks {
   [key: string]: BrowserViewDeck
 }
 
@@ -78,15 +83,15 @@ export class BrowserViewManager {
   public DEFAULT_MAX_HEIGHT = 36
 
   #preloadScripts: KeyValuePair
-  #mainWindow: Electron.BrowserWindow
+  #mainWindow: Electron.BrowserWindow | null = null
   #browserViewList: { [key: string]: BrowserView } = {} // all of the browserViews
-  #lastBrowserView: Electron.BrowserView | null
-  #nextRemoveBrowserView: Electron.BrowserView | null
-  #homeBrowserview: Electron.BrowserView | null
+  #lastBrowserView: Electron.BrowserView | null = null
+  #nextRemoveBrowserView: Electron.BrowserView | null = null
+  #homeBrowserview: Electron.BrowserView | null = null
   #homeMaxHeight = 36
-  #nativeThemeConfig: NativeThemeConfig | null
+  #nativeThemeConfig: NativeThemeConfig | null = null
 
-  #layoutConfig: BrowserViewLayout | null
+  #layoutConfig: BrowserViewLayout | null = null
   #browserViewDecks: BrowserViewDecks = {}
 
   #debug = false
@@ -109,6 +114,9 @@ export class BrowserViewManager {
   }
 
   public getSize(): number[] {
+    if (!this.#mainWindow) {
+      return [0, 0]
+    }
     return this.#mainWindow.getSize()
   }
 
@@ -120,10 +128,16 @@ export class BrowserViewManager {
   }
 
   public removeBrowserView(browserView: BrowserView): void {
+    if (!this.#mainWindow) {
+      return
+    }
     this.#mainWindow.removeBrowserView(browserView)
   }
 
   public addBrowserView(browserView: BrowserView): void {
+    if (!this.#mainWindow) {
+      return
+    }
     this.debug('bvm addBrowserView', browserView)
     this.#mainWindow.addBrowserView(browserView)
   }
@@ -195,7 +209,7 @@ export class BrowserViewManager {
       size,
       offset,
       browserView.getBounds(),
-      this.#mainWindow.getBounds()
+      this.#mainWindow ? this.#mainWindow.getBounds() : null
     )
     try {
       browserView.setBounds({

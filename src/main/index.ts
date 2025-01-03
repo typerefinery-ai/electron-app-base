@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   app,
   shell,
@@ -8,6 +9,7 @@ import {
   Menu,
   globalShortcut,
   crashReporter,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   systemPreferences,
   type BrowserWindowConstructorOptions,
   nativeTheme
@@ -22,6 +24,7 @@ import {
   KeyValuePair
 } from './BrowserViewManager'
 import { MenuItemConstructorOptions, MenuItem } from 'electron/main'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { type AppIPC, sharedAppIpc, IPCMethod } from '../preload/ipc'
 import { getConfig, getEnvConfigWithDefault, tryParseInt } from './Utils'
 import {
@@ -65,6 +68,7 @@ let browserViewManager: BrowserViewManager
 let mainWindowMenu: Menu //create and update app menu
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let mainWindowTray: Tray //create and update app tray icon
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let mainLayoutConfig: BrowserViewLayout
 
 const MAIN_WINDOW_FILE = '../renderer/index.html'
@@ -137,6 +141,7 @@ const defaultMainWindowOptions: BrowserWindowConstructorOptions = {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const defaultChildWindowOptions: BrowserWindowConstructorOptions = {
   minWidth: 680,
   minHeight: 400,
@@ -204,7 +209,8 @@ if (!appMainInstanceLock) {
   app.quit()
   process.exit(0)
 } else {
-  app.on('second-instance', (event, commandLine, workingDirectory) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  app.on('second-instance', (_event, _commandLine, _workingDirectory) => {
     // Someone tried to run a second instance, we should focus our window.
     if (mainWindow) {
       if (mainWindow.isMinimized()) {
@@ -227,7 +233,8 @@ app.whenReady().then(() => {
   }
 
   //gpu-process-crashed
-  app.on('child-process-gone', (event, details) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  app.on('child-process-gone', (_event, _details) => {
     console.log('child-process-gone')
   })
 
@@ -428,13 +435,13 @@ app.on('window-all-closed', () => {
 //   dialog.showOpenDialog(child)
 // })
 
-ipcMain.on('lang-change', (e, lang) => {
+ipcMain.on('lang-change', (_e, lang) => {
   logger.log('ipc lang-change', lang)
   i18n.changeLanguage(lang)
   mainWindow.setTitle(i18n.t('app.title'))
 })
 
-ipcMain.on('menu-click', (e, action) => {
+ipcMain.on('menu-click', (_e, action) => {
   logger.log('ipc menu-click', action)
   if (action === 'min') {
     mainWindow.minimize()
@@ -524,10 +531,11 @@ function addIpcEvents(window: BrowserWindow): void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getDirectory(path): any {
       shell.showItemInFolder(path) // Show the given file in a file manager. If possible, select the file.
+
       // shell.openPath(path)
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async restartService(serviceid: string): Promise<any> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+    async restartService(_serviceid: string): Promise<any> {
       logger.log(`ipc restartService {serviceid}`)
       // const aservice = serviceManager.getService(serviceid)
       // if (aservice) {
@@ -539,8 +547,8 @@ function addIpcEvents(window: BrowserWindow): void {
       // }
       return true
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async startService(serviceid: string): Promise<any> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+    async startService(_serviceid: string): Promise<any> {
       logger.log(`ipc startService {serviceid}`)
       // const aservice = serviceManager.getService(serviceid)
       // if (aservice) {
@@ -551,8 +559,8 @@ function addIpcEvents(window: BrowserWindow): void {
       // }
       return true
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stopService(serviceid: string): any {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+    stopService(_serviceid: string): any {
       logger.log(`ipc stopService {serviceid}`)
       // const aservice = serviceManager.getService(serviceid)
       // if (aservice) {
@@ -609,6 +617,9 @@ function addIpcEvents(window: BrowserWindow): void {
     },
     changeSettings(config: never): void {
       logger.log(`ipc changeSettings`, config)
+    },
+    getEnv: function (): any[] | Promise<any[]> {
+      throw new Error('Function not implemented.')
     }
   }
 

@@ -1,47 +1,51 @@
-import express from "express"
-import { type ServiceManagerEvents, ServiceManager } from "./ServiceManager"
-import { Service, ServiceStatus, type ServiceConfig } from "./Service"
-import { Logger } from "./Logger"
-import { dataPath, resourceBinary } from "./Resources"
-import path from "path"
-import config from "../../../package.json"
-import fs from "fs"
-import process from "node:process"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import express from 'express'
+import { ServiceManager, type ReservedPort } from './ServiceManager'
+import { Service, ServiceStatus } from './Service'
+import { Logger } from './Logger'
+import path from 'path'
+import fs from 'fs'
+import process from 'node:process'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+import pkg from '../../package.json'
+import { getTimestamp } from './Utils'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const pageAutoRefreshEverySeconds = 10
 
-const isProduction = process.env.NODE_ENV === "production"
-const APPDATA =
-  process.env.APPDATA || (process.platform === "darwin" ? "/Users" : "/home")
+const isProduction = process.env.NODE_ENV === 'production'
+const APPDATA = process.env.APPDATA || (process.platform === 'darwin' ? '/Users' : '/home')
 
 let logsDir = isProduction
-  ? path.join(APPDATA, config.name, "logs")
-  : path.join(__dirname, "../../../logs")
+  ? path.join(APPDATA, pkg.name, 'logs')
+  : path.join(__dirname, '../../../logs')
 
 // create a new logs sub directory with date timestamp everytime the app starts
 const date = new Date()
-const dateStr = date
-  .toISOString()
-  .replace(/:/g, "-")
-  .replace(/.Z/g, "")
-  .replace(/T/g, "_")
+const dateStr = date.toISOString().replace(/:/g, '-').replace(/.Z/g, '').replace(/T/g, '_')
 logsDir = path.join(logsDir, dateStr)
-fs.mkdirSync(logsDir, { recursive: true })
+// check if logs directory exists, if not create it
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true })
+}
 
 const servicePort = 3001
 
-const logger = new Logger(logsDir, "services")
+const logger = new Logger(logsDir, 'services')
 
-logger.log("service manager log", path.join(logsDir, "servicemanager.log"))
+logger.log('service manager log', path.join(logsDir, 'servicemanager.log'))
 
-logger.log("isProduction", isProduction)
+logger.log('isProduction', isProduction)
 
-const servicesPath = path.join(__dirname, "../../../services")
+const servicesPath = path.join(__dirname, '../../../services')
 const servicesUserDataPath = isProduction
-  ? path.join(APPDATA, config.name, "services")
-  : path.join(__dirname, "../../../services")
-logger.log("services path", servicesPath)
-logger.log("services data path", servicesUserDataPath)
+  ? path.join(APPDATA, pkg.name, 'services')
+  : path.join(__dirname, '../../../services')
+logger.log('services path', servicesPath)
+logger.log('services data path', servicesUserDataPath)
 
 const serviceManager = new ServiceManager(
   logsDir,
@@ -50,11 +54,11 @@ const serviceManager = new ServiceManager(
   servicesUserDataPath,
   {
     sendServiceStatus,
-    sendServiceLog,
+    sendServiceLog
   },
   {
     sendServiceList,
-    sendGlobalEnv,
+    sendGlobalEnv
   }
 )
 
@@ -62,7 +66,7 @@ const serviceManager = new ServiceManager(
  * Stop all services on exit
  * @param {NodeJS.SignalsListener} signal
  */
-async function signalExitHandler(signal) {
+async function signalExitHandler(signal): Promise<void> {
   console.log(`terminating - service manager stopAll, signal ${signal}.`)
   logger.log(`terminating - service manager stopAll, signal ${signal}.`)
   await serviceManager.stopAll()
@@ -70,71 +74,85 @@ async function signalExitHandler(signal) {
 }
 
 // listen for TERM signal .e.g. ctr+c
-process.on("beforeExit", signalExitHandler)
-process.on("exit", signalExitHandler)
-process.on("SIGBREAK", signalExitHandler)
-process.on("SIGINT", signalExitHandler)
-process.on("SIGQUIT", signalExitHandler)
-process.on("SIGTERM", signalExitHandler)
+process.on('beforeExit', signalExitHandler)
+process.on('exit', signalExitHandler)
+process.on('SIGBREAK', signalExitHandler)
+process.on('SIGINT', signalExitHandler)
+process.on('SIGQUIT', signalExitHandler)
+process.on('SIGTERM', signalExitHandler)
 
-logger.log("service manager console hooks loaded.")
+logger.log('service manager console hooks loaded.')
 
 //starting services automatically
-const isAutoStart = process.env.SERVICES_AUTOSTART === "true"
-logger.log("service manager isAutoStart: {}", isAutoStart)
+const isAutoStart = process.env.SERVICES_AUTOSTART === 'true'
+logger.log('service manager isAutoStart: {}', isAutoStart)
 if (isAutoStart) {
-  logger.log("service manager startAll.")
+  logger.log('service manager startAll.')
   serviceManager.startAll()
 }
 
-function escapeHTML(unsafe) {
-  return unsafe.replace(
-    "/[\u0000-\u002F\u003A-\u0040\u005B-\u0060\u007B-\u00FF]/g",
-    (c) => "&#" + ("000" + c.charCodeAt(0)).slice(-4) + ";"
-  )
-}
-
-function getServicePage(service: Service) {
+function getServicePage(service: Service): string {
   const serviceDependencies = getServiceDependencies([service.id])
 
+  const ports = service.getPorts()
+
+  //for each key in ports, create a row
+  let portsList = ''
+  for (const port in ports) {
+    const portData = ports[port]
+    const portLink =
+      portData > 0 ? `<a href="http://localhost:${portData}" target="_blank">${port}</a>` : port
+
+    portsList += `<tr class="align-middle">
+      <td>${portLink}</td>
+      <td>${portData}</td>
+      </tr>`
+  }
+
+  const urls = service.getURLs()
+  let urlsList = ''
+  if (Object.keys(urls).length < 0) {
+    urlsList = 'No service URLs configured.'
+  } else {
+    for (const url in urls) {
+      const urlData = urls[url]
+      urlsList += `<a class="btn btn-primary" role="button" target="_blank" href="${urlData}">${url.toUpperCase()}</a>`
+    }
+  }
+
   const execservice = service.options.execconfig?.execservice?.id
-    ? " (" + service.options.execconfig?.execservice.id + ")"
-    : ""
+    ? ' (' + service.options.execconfig?.execservice.id + ')'
+    : ''
   const serviceStatusName =
-    Object.keys(ServiceStatus)[
-      Object.values(ServiceStatus).findIndex((x) => x === service.status)
-    ]
-  const pathSeparator = process.platform === "win32" ? "\\" : "/"
-  let statusBackground = "bg-warning"
+    Object.keys(ServiceStatus)[Object.values(ServiceStatus).findIndex((x) => x === service.status)]
+  const pathSeparator = process.platform === 'win32' ? '\\' : '/'
+  let statusBackground = 'bg-warning'
 
   if (service.status === ServiceStatus.STARTED) {
-    statusBackground = "bg-success"
+    statusBackground = 'bg-success'
   }
   if (service.status === ServiceStatus.COMPLETED) {
-    statusBackground = "bg-success-subtle"
+    statusBackground = 'bg-success-subtle'
   }
 
-  if (
-    service.status === ServiceStatus.STOPPED ||
-    service.status === ServiceStatus.COMPLETEDERROR
-  ) {
-    statusBackground = "bg-danger"
+  if (service.status === ServiceStatus.STOPPED || service.status === ServiceStatus.COMPLETEDERROR) {
+    statusBackground = 'bg-danger'
   }
   if (service.status === ServiceStatus.DISABLED) {
-    statusBackground = "bg-secondary"
+    statusBackground = 'bg-secondary'
   }
 
-  let actionSetupLabel = "Install"
+  let actionSetupLabel = 'Install'
   if (service.isSetup) {
-    actionSetupLabel = "Re-Install"
+    actionSetupLabel = 'Re-Install'
   }
 
-  let serviceLink = ""
+  let serviceLink = ''
   if (service.port) {
     serviceLink = `<a href="http://localhost:${service.port}" target="_blank">${service.port}</a>`
   }
   if (service.port && service.port <= 0) {
-    serviceLink = ""
+    serviceLink = ''
   }
 
   return `
@@ -172,6 +190,13 @@ function getServicePage(service: Service) {
       </div>
 
       <div class="my-3 p-3 bg-body rounded shadow-sm">
+        <h6 class="border-bottom pb-2 mb-3">Urls</h6>
+        <div class="input-group input-group-sm mb-1 gap-2">
+          ${urlsList}
+        </div>
+      </div>
+
+      <div class="my-3 p-3 bg-body rounded shadow-sm">
         <h6 class="border-bottom pb-2 mb-3">Config</h6>
         <div class="input-group input-group-sm mb-1">
           <span class="input-group-text" id="inputGroup-sizing-sm">Id</span>
@@ -202,20 +227,8 @@ function getServicePage(service: Service) {
           <input type="text" value="${serviceStatusName}" readonly class="form-control ${statusBackground}" aria-describedby="inputGroup-sizing-sm">
         </div>
         <div class="input-group input-group-sm mb-1">
-          <span class="input-group-text" id="inputGroup-sizing-sm">URL</span>
+          <span class="input-group-text" id="inputGroup-sizing-sm">Primary Access Port</span>
           <span class="form-control">${serviceLink}</span>
-        </div>
-        <div class="input-group input-group-sm mb-1">
-          <span class="input-group-text" id="inputGroup-sizing-sm">Port</span>
-          <span class="form-control">${service.port}</span>
-        </div>
-        <div class="input-group input-group-sm mb-1">
-          <span class="input-group-text" id="inputGroup-sizing-sm">Port Secondary</span>
-          <span class="form-control">${service.portsecondary}</span>
-        </div>
-        <div class="input-group input-group-sm mb-1">
-          <span class="input-group-text" id="inputGroup-sizing-sm">Port Console</span>
-          <span class="form-control">${service.portconsole}</span>
         </div>
         <div class="input-group input-group-sm mb-1">
           <span class="input-group-text" id="inputGroup-sizing-sm">PID</span>
@@ -223,19 +236,15 @@ function getServicePage(service: Service) {
         </div>
         <div class="input-group input-group-sm mb-1">
           <span class="input-group-text" id="inputGroup-sizing-sm">Mem</span>
-          <span class="form-control">${(service.memorybytes / 1048576).toFixed(
-            0
-          )}MB</span>
+          <span class="form-control">${(service.memorybytes / 1048576).toFixed(0)}MB</span>
         </div>
         <div class="input-group input-group-sm mb-1">
           <span class="input-group-text" id="inputGroup-sizing-sm">Mem Total</span>
-          <span class="form-control">${(
-            service.memorybytestotal / 1048576
-          ).toFixed(0)}MB</span>
+          <span class="form-control">${(service.memorybytestotal / 1048576).toFixed(0)}MB</span>
         </div>
         <div class="input-group input-group-sm mb-1">
           <span class="input-group-text" id="inputGroup-sizing-sm">Process Tree</span>
-          <span class="form-control">${service.processtree.join(", ")}</span>
+          <span class="form-control">${service.processtree.join(', ')}</span>
         </div>
         <div class="input-group input-group-sm mb-1">
           <span class="input-group-text" id="inputGroup-sizing-sm">Exec Service</span>
@@ -278,13 +287,13 @@ function getServicePage(service: Service) {
         <div class="input-group input-group-sm mb-1">
           <span class="input-group-text" id="inputGroup-sizing-sm">Setup Command Line</span>
           <textarea type="text" readonly class="form-control overflow-auto" aria-describedby="inputGroup-sizing-sm" rows="10">
-            ${service.getSetupForPlatfrom.join("\n").trim()}
+            ${service.getSetupForPlatfrom.join('\n').trim()}
           </textarea>
         </div>
         <div class="input-group input-group-sm mb-1">
           <span class="input-group-text" id="inputGroup-sizing-sm">Setup Command Line Parsed</span>
           <textarea type="text" readonly class="form-control overflow-auto" aria-describedby="inputGroup-sizing-sm" rows="10">
-            ${service.getSetupForPlatfromParsed.join("\n").trim()}
+            ${service.getSetupForPlatfromParsed.join('\n').trim()}
           </textarea>
         </div>
         <div class="input-group input-group-sm mb-1">
@@ -301,9 +310,8 @@ function getServicePage(service: Service) {
         </div>
         <div class="input-group input-group-sm mb-1">
           <span class="input-group-text" id="inputGroup-sizing-sm">Archive File</span>
-          <input type="text" value="${
-            service.getArchiveForPlatform?.name
-          }" readonly class="form-control" aria-describedby="inputGroup-sizing-sm">
+          <input type="text" value="${service.getArchiveForPlatform
+            ?.name}" readonly class="form-control" aria-describedby="inputGroup-sizing-sm">
         </div>
         <div class="input-group input-group-sm mb-1">
           <span class="input-group-text" id="inputGroup-sizing-sm">Archive Output</span>
@@ -327,11 +335,25 @@ function getServicePage(service: Service) {
       </div>
 
       <div class="my-3 p-3 bg-body rounded shadow-sm">
+        <a id="ports"></a>
+        <h6 class="border-bottom pb-2 mb-3">Ports</h6>
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Port</th>
+            </tr>
+          </thead>
+          <tbody class="table-group-divider">
+          ${portsList}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="my-3 p-3 bg-body rounded shadow-sm">
         <h6 class="border-bottom pb-2 mb-3">Setup Command line</h6>
         <div class="border border-1 bg-secondary-subtle p-3 fs-6">
-        <pre><code id="env" style="font-size: 8pt">${JSON.stringify(
-          service.setup
-        )}</code></pre>
+        <pre><code id="env" style="font-size: 8pt">${JSON.stringify(service.setup)}</code></pre>
         </div>
       </div>
 
@@ -341,7 +363,7 @@ function getServicePage(service: Service) {
         <pre><code id="env" style="font-size: 8pt">${JSON.stringify(
           service.compileEnvironmentVariables(),
           null,
-          "\t"
+          '\t'
         )}</code></pre>
         </div>
       </div>
@@ -350,11 +372,11 @@ function getServicePage(service: Service) {
         <h6 class="border-bottom pb-2 mb-3">Logs</h6>
         <p>Error Log: <a href="#" onclick="loadLog('${service.errorLogFile.replaceAll(
           pathSeparator,
-          "/"
+          '/'
         )}')">${service.errorLogFile}</a></p>
         <p>Console Log: <a href="#" onclick="loadLog('${service.consoleLogFile.replaceAll(
           pathSeparator,
-          "/"
+          '/'
         )}')">${service.consoleLogFile}</a></p>
         <p>Log Refresh In: <span id="refreshInLog">-</span></p>
         <input class="form-control p-3" id="logSearch" type="text" placeholder="Search..">
@@ -441,14 +463,7 @@ function getServicePage(service: Service) {
 </html>`
 }
 
-function getTimestamp(date: Date = new Date()) {
-  const timestamp = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-    .toISOString()
-    .replace(/(.*)T(.*)\..*/, "$1 $2")
-  return timestamp
-}
-
-function getServiceDependencies(filterServices: string[] = []) {
+function getServiceDependencies(filterServices: string[] = []): any {
   const serviceDependencies = {}
 
   let nodes: any[] = []
@@ -459,8 +474,7 @@ function getServiceDependencies(filterServices: string[] = []) {
 
   serviceManager.getServices().forEach((service) => {
     // are we returning filtered data?
-    const isFiltered: boolean =
-      filterServices.length > 0 && filterServices.includes(service.id)
+    const isFiltered: boolean = filterServices.length > 0 && filterServices.includes(service.id)
 
     if (isFiltered) {
       filteredServices.push(service.id)
@@ -469,7 +483,7 @@ function getServiceDependencies(filterServices: string[] = []) {
       name: service.name,
       n: 1,
       grp: 1,
-      id: service.id,
+      id: service.id
     }
     nodes.push(sericeNode)
     // if service has depends_on services
@@ -478,7 +492,7 @@ function getServiceDependencies(filterServices: string[] = []) {
       const depNode = {
         source: dep,
         target: service.id,
-        value: 1,
+        value: 1
       }
       links.push(depNode)
 
@@ -488,9 +502,9 @@ function getServiceDependencies(filterServices: string[] = []) {
     })
     if (!service.options.execconfig.depend_on) {
       const depNode = {
-        source: "root",
+        source: 'root',
         target: service.id,
-        value: 1,
+        value: 1
       }
       links.push(depNode)
     }
@@ -501,73 +515,103 @@ function getServiceDependencies(filterServices: string[] = []) {
       //remove links that are not part of filtered services list
       links = links.filter(
         (link) =>
-          (filteredServices.includes(link.source) &&
-            filteredServices.includes(link.target)) ||
-          (link.source == "root" && filteredServices.includes(link.target)) ||
-          (link.target == "root" && filteredServices.includes(link.source))
+          (filteredServices.includes(link.source) && filteredServices.includes(link.target)) ||
+          (link.source == 'root' && filteredServices.includes(link.target)) ||
+          (link.target == 'root' && filteredServices.includes(link.source))
       )
     }
   })
 
   //add default nodes
-  nodes.push({ name: "root", n: 1, grp: 1, id: "root" })
+  nodes.push({ name: 'root', n: 1, grp: 1, id: 'root' })
   // nodes.push({ name: "Enabled", n: 1, grp: 1, id: "enabled" })
   // nodes.push({ name: "Disabled", n: 1, grp: 1, id: "disabled" })
 
   // links.push({ source: "services", target: "enabled", value: 1 })
   // links.push({ source: "services", target: "disabled", value: 1 })
 
-  serviceDependencies["nodes"] = nodes
-  serviceDependencies["links"] = links
+  serviceDependencies['nodes'] = nodes
+  serviceDependencies['links'] = links
 
-  serviceDependencies["attributes"] = {}
+  serviceDependencies['attributes'] = {}
   return serviceDependencies
 }
 
-function getServicesPage(services: Service[]) {
+function getServicesPage(
+  services: Service[],
+  ports: { [key: string]: ReservedPort },
+  urls: { [key: string]: string }
+): string {
   const serviceDependencies = getServiceDependencies()
+  // console.log("ports", JSON.stringify(ports))
+  let portsList = ''
+  for (const port in ports) {
+    const portData = ports[port]
+    portsList += `<tr class="align-middle">
+      <td>${portData.port}</td>
+      <td><a href="/service/${portData.service}#ports">${portData.service}</a></td>
+      <td>${portData.type}</td>
+      <td>${portData.status}</td>
+      <td>${portData.requestedPort}</td>
+      </tr>`
+  }
+
+  //map urls into string buttons
+  let urlsList = ''
+  if (Object.keys(urls).length < 0) {
+    urlsList = 'No service URLs configured.'
+  } else {
+    for (const url in urls) {
+      const urlData = urls[url]
+      urlsList += `<a class="btn btn-primary" role="button" target="_blank" href="${urlData}">${url.toUpperCase()}</a>`
+    }
+  }
 
   let servicesList = services
     .map((service) => {
       const execservice = service.options.execconfig?.execservice?.id
         ? service.options.execconfig?.execservice.id
-        : ""
+        : ''
       const serviceStatusName =
         Object.keys(ServiceStatus)[
           Object.values(ServiceStatus).findIndex((x) => x === service.status)
         ]
-      const configured = service.isSetup ? "configured" : "not configured"
-      let serviceLink = ""
+      const configured = service.isSetup
+        ? 'configured'
+        : service.hasSetup
+          ? 'not configured'
+          : 'N/A'
+      let serviceLink = ''
       if (service.port) {
         serviceLink = `<a href="http://localhost:${service.port}" target="_blank">${service.port}</a>`
       }
       if (service.port && service.port <= 0) {
-        serviceLink = ""
+        serviceLink = ''
       }
-      let statusBackground = "bg-warning"
+      let statusBackground = 'bg-warning'
 
       if (service.status === ServiceStatus.STARTED) {
-        statusBackground = "bg-success"
+        statusBackground = 'bg-success'
       }
       if (service.status === ServiceStatus.COMPLETED) {
-        statusBackground = "bg-success-subtle"
+        statusBackground = 'bg-success-subtle'
       }
       if (
         service.status === ServiceStatus.STOPPED ||
         service.status === ServiceStatus.COMPLETEDERROR
       ) {
-        statusBackground = "bg-danger"
+        statusBackground = 'bg-danger'
       }
       if (service.status === ServiceStatus.DISABLED) {
-        statusBackground = "bg-secondary"
+        statusBackground = 'bg-secondary'
       }
-      const actionSetupEnabled = service.isInstallable ? "" : "disabled"
-      let actionSetupLabel = "Install"
+      const actionSetupEnabled = service.isInstallable ? '' : 'disabled'
+      let actionSetupLabel = 'Install'
       if (service.isSetup) {
-        actionSetupLabel = "Re-Install"
+        actionSetupLabel = 'Re-Install'
       } else {
         if (!service.isInstallable) {
-          actionSetupLabel = "N/A"
+          actionSetupLabel = 'N/A'
         }
       }
 
@@ -579,21 +623,21 @@ function getServicesPage(services: Service[]) {
       <td>${serviceLink}</td>
       <td>
         <button type="button" class="btn btn-success ${
-          !service.isRunnable ? "disabled" : ""
+          !service.isRunnable ? 'disabled' : ''
         }" onclick="triggerServiceAPI('${service.id}','start')">Start</button>
         <button type="button" class="btn btn-danger ${
-          !service.isRunnable ? "disabled" : ""
+          !service.isRunnable ? 'disabled' : ''
         }" onclick="triggerServiceAPI('${service.id}','stop')">Stop</button>
         <button type="button" class="btn btn-danger" ${actionSetupEnabled} onclick="triggerServiceAPI('${
-        service.id
-      }','setup')">${actionSetupLabel}</button>
+          service.id
+        }','setup')">${actionSetupLabel}</button>
       </td>
       </tr>`
     })
-    .join("\n")
+    .join('\n')
 
   if (servicesList.length === 0) {
-    servicesList = "No services found."
+    servicesList = 'No services found.'
   }
 
   return `
@@ -630,6 +674,13 @@ function getServicesPage(services: Service[]) {
       </div>
 
       <div class="my-3 p-3 bg-body rounded shadow-sm">
+        <h6 class="border-bottom pb-2 mb-3">Urls</h6>
+        <div class="input-group input-group-sm mb-1 gap-2">
+        ${urlsList}
+        </div>
+      </div>
+
+      <div class="my-3 p-3 bg-body rounded shadow-sm">
         <table class="table table-hover">
           <thead class="table-light">
             <tr>
@@ -660,9 +711,26 @@ function getServicesPage(services: Service[]) {
         <pre><code id="env" style="font-size: 8pt">${JSON.stringify(
           serviceManager.getGlobalEnv(),
           null,
-          "\t"
+          '\t'
         )}</code></pre>
         </div>
+      </div>
+
+      <div class="my-3 p-3 bg-body rounded shadow-sm">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Port</th>
+              <th scope="col">Service</th>
+              <th scope="col">Type</th>
+              <th scope="col">Satus</th>
+              <th scope="col">Requested Port</th>
+            </tr>
+          </thead>
+          <tbody class="table-group-divider">
+          ${portsList}
+          </tbody>
+        </table>
       </div>
 
       <div class="my-3 p-3 bg-body rounded shadow-sm">
@@ -719,7 +787,7 @@ function getServicesPage(services: Service[]) {
 </html>`
 }
 
-function getdisplayDependencyTreeStyle() {
+function getdisplayDependencyTreeStyle(): string {
   return `
 <style>
   circle {
@@ -738,7 +806,7 @@ function getdisplayDependencyTreeStyle() {
   `
 }
 
-function getdisplayDependencyTreeFunction(height = 400) {
+function getdisplayDependencyTreeFunction(height = 400): string {
   return `
 
 function displayDependencyTree(d3, data) {
@@ -843,66 +911,70 @@ function displayDependencyTree(d3, data) {
   `
 }
 
-function sendGlobalEnv(globalenv: { [key: string]: string }) {
+function sendGlobalEnv(globalenv: { [key: string]: string }): void {
   logger.log(`globalEnv: ${JSON.stringify(globalenv)}`)
 }
 
-function sendServiceList(serviceConfigList: Service[]) {
-  logger.log(
-    `sendServiceList: ${serviceConfigList.map((x) => x.id).toString()}`
-  )
+function sendServiceList(serviceConfigList: Service[]): void {
+  logger.log(`sendServiceList: ${serviceConfigList.map((x) => x.id).toString()}`)
 }
 
 function sendServiceStatus(id: string, output: string): void {
-  logger.log("sendServiceStatus", id, output)
+  logger.log('sendServiceStatus', id, output)
 }
 
-function sendServiceLog(id: string, output: string) {
-  logger.log("sendServiceLog", id, output)
+function sendServiceLog(id: string, output: string): void {
+  logger.log('sendServiceLog', id, output)
 }
 
 const app = express()
 
-app.get("/", function (req, res) {
-  res.redirect("/services")
+app.get('/', function (_req, res) {
+  res.redirect('/services')
 })
 
-app.post("/exit", function (req, res, next) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.post('/exit', function (_req, _res, _next) {
   serviceManager.stopAll().finally(() => {
     process.exit()
   })
 })
 
-app.get("/services", function (req, res) {
+app.get('/services', function (_req, res) {
   const services = serviceManager.getServices()
-  res.send(getServicesPage(services))
+  const ports = serviceManager.getPorts()
+  const urls = serviceManager.getURLs()
+  res.send(getServicesPage(services, ports, urls))
 })
 
-app.post("/service/:serviceId/:serviceAction", (req, res, next) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.post('/service/:serviceId/:serviceAction', (req, res, _next) => {
   const serviceId = req.params.serviceId
   const serviceAction = req.params.serviceAction
   const service = serviceManager.getService(serviceId)
-  if (service.listenerCount("status") === 0) {
-    service.on("status", (status) => {
+  if (service.listenerCount('status') === 0) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    service.on('status', (_status) => {
       // console.log(["status", service.id, status])
     })
   }
-  if (service.listenerCount("log") === 0) {
-    service.on("log", (status) => {
+  if (service.listenerCount('log') === 0) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    service.on('log', (_status) => {
       // console.log(["log", service.id, status])
     })
   }
-  if (serviceAction === "start") {
+  if (serviceAction === 'start') {
     if (!service.isRunning) {
       service.start()
     }
   }
-  if (serviceAction === "stop") {
+  if (serviceAction === 'stop') {
     if (service.isRunning) {
       service.stop()
     }
   }
-  if (serviceAction === "setup") {
+  if (serviceAction === 'setup') {
     // console.log(["setup start", service.id])
     if (service.isRunning) {
       service.stop()
@@ -914,44 +986,49 @@ app.post("/service/:serviceId/:serviceAction", (req, res, next) => {
     service: serviceId,
     action: serviceAction,
     status: service.status,
-    executable: service.getServiceExecutable(),
+    executable: service.getServiceExecutable()
   })
 })
 
-app.post("/services/stopall", function (req, res, next) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.post('/services/stopall', function (_req, res, _next) {
   serviceManager.stopAll().finally(() => {
     res.json({
-      status: "ok",
+      status: 'ok'
     })
   })
 })
 
-app.post("/services/startall", function (req, res, next) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.post('/services/startall', function (_req, res, _next) {
   serviceManager.startAll().finally(() => {
     res.json({
-      status: "ok",
+      status: 'ok'
     })
   })
 })
 
-app.post("/services/reload", (req, res, next) => {
-  logger.log("Reloading config.")
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.post('/services/reload', (_req, res, _next) => {
+  logger.log('Reloading config.')
   serviceManager.reload().finally(() => {
     res.json({
-      status: "ok",
+      status: 'ok'
     })
   })
 })
 
-app.get("/service/:serviceId", (req, res, next) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.get('/service/:serviceId', (req, res, _next) => {
   const serviceId = req.params.serviceId
   const service = serviceManager.getService(serviceId)
   res.send(getServicePage(service))
 })
 
-app.post("/service/file", express.json({ type: "*/*" }), (req, res, next) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.post('/service/file', express.json({ type: '*/*' }), (req, res, _next) => {
   const filePath = req.body.filePath
-  const file = fs.readFileSync(filePath, "utf8")
+  const file = fs.readFileSync(filePath, 'utf8')
   res.end(file)
 })
 
@@ -959,22 +1036,16 @@ app.listen(servicePort, () => {
   logger.log(`Server running on port ${servicePort}`)
 })
 
-app.get("/services/status", (req, res, next) => {
-  logger.log("Service status")
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.get('/services/status', (_req, res, _next) => {
+  logger.log('Service status')
   // some services status will not be STARTED. The status will be AVAILABLE.
-  const availableServiceList = [
-    "typedb-sample",
-    "typedb-init",
-    "archive",
-    "java",
-    "node",
-    "python",
-  ]
+  const availableServiceList = ['typedb-sample', 'typedb-init', 'archive', 'java', 'node', 'python']
 
   // return ready if all enabled services are started.
   const services = serviceManager.getServices()
   let result = true
-  let serviceId = ""
+  let serviceId = ''
   for (const i in services) {
     const service = services[i]
     if (
@@ -982,7 +1053,7 @@ app.get("/services/status", (req, res, next) => {
       !service.isStarted &&
       !availableServiceList.includes(service.id)
     ) {
-      console.log(service.id, " - service not started.")
+      console.log(service.id, ' - service not started.')
       serviceId = service.id
       result = false
       break
@@ -990,7 +1061,7 @@ app.get("/services/status", (req, res, next) => {
   }
 
   res.status(result ? 200 : 503).json({
-    status: result ? "ready" : "not ready",
-    message: result ? "Services are started" : `${serviceId} is not started.`,
+    status: result ? 'ready' : 'not ready',
+    message: result ? 'Services are started' : `${serviceId} is not started.`
   })
 })
