@@ -69,13 +69,24 @@ export const sharedAppIpc = {
   getAppDataPath: new IPCMethod<[string], any[]>('getAppDataPath'),
   getGlobalEnv: new IPCMethod<[], any[]>('getGlobalEnv'),
   getEnv: new IPCMethod<[], any[]>('getEnv'),
+  windowResizeStart: new IPCMethod<[string], void>('windowResizeStart'),
+  windowResizeEnd: new IPCMethod<[string], void>('windowResizeEnd'),
   windowResize: new IPCMethod<[any], void>('windowResize'),
+  windowResizeCancel: new IPCMethod<[any], void>('windowResizeCancel'),
+  windowHide: new IPCMethod<[any], void>('windowHide'),
+  windowShow: new IPCMethod<[any], void>('windowShow'),
+  setWindowTitle: new IPCMethod<[string], void>('setWindowTitle'),
   switchPageLeft: new IPCMethod<[never], void>('switchPageLeft'),
   switchPageRight: new IPCMethod<[never], void>('switchPageRight'),
   addTab: new IPCMethod<[never], void>('addTab'),
   removeTab: new IPCMethod<[never], void>('removeTab'),
   changeTheme: new IPCMethod<[never], void>('changeTheme'),
-  changeSettings: new IPCMethod<[never], void>('changeSettings')
+  changeSettings: new IPCMethod<[never], void>('changeSettings'),
+  topicSend: new IPCMethod<[string, string, any], void>('topicSend'),
+  topicListen: new IPCMethod<[string, string, any], void>('topicListen'),
+  windowFocus: new IPCMethod<[], void>('windowFocus'),
+  windowFocusLeft: new IPCMethod<[], void>('windowFocusLeft'),
+  windowFocusRight: new IPCMethod<[], void>('windowFocusRight')
 }
 
 export type AppIPC = {

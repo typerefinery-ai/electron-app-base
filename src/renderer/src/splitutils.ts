@@ -11,8 +11,8 @@ export class SplitUtils {
   DEFAULT_GRID_HORIZONTAL_HIDE_SIZE = '1fr 10px 0fr'
 
   DEFAULT_GRID_VERTICAL_SIZE = '1fr 10px 1fr'
-  DEFAULT_GRID_VERTICAL_HIDE_LEFT_SIZE = '1fr 10px 0fr'
-  DEFAULT_GRID_VERTICAL_HIDE_RIGHT_SIZE = '0fr 10px 1fr'
+  DEFAULT_GRID_VERTICAL_HIDE_LEFT_SIZE = '0fr 10px 1fr'
+  DEFAULT_GRID_VERTICAL_HIDE_RIGHT_SIZE = '1fr 10px 0fr'
 
   $gridMain
   $gridMainSplitLeftAside
@@ -29,6 +29,8 @@ export class SplitUtils {
   $asideRight
 
   $windowfocus
+  $windowfocusright
+  $windowfocusleft
 
   $contentleft
   $contentleftbody
@@ -44,8 +46,11 @@ export class SplitUtils {
 
   $
   gridMain
+  gridMainPreviousTemplate = {}
   gridHorizontal
-  gridVerticalertical
+  gridHorizontalPreviousTemplate = {}
+  gridVertical
+  gridVerticalPreviousTemplate = {}
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor($: any) {
@@ -77,6 +82,8 @@ export class SplitUtils {
     this.$asideRight = $('.asideright')
 
     this.$windowfocus = $('.windowfocus')
+    this.$windowfocusright = $('.windowfocusright')
+    this.$windowfocusleft = $('.windowfocusleft')
 
     this.$contentleft = $('.contentleft')
     this.$contentleftbody = $('.contentleft .contentbody')
@@ -224,6 +231,22 @@ export class SplitUtils {
     return this.WindowFocusToggle.attr('focus') === 'focus'
   }
 
+  //window focus right
+  get WindowFocusRightToggle(): any {
+    return this.$windowfocusright
+  }
+  get isWindowFocusRightToggleFocus(): any {
+    return this.WindowFocusRightToggle.attr('focus') === 'focus'
+  }
+
+  //window focus left
+  get WindowFocusLeftToggle(): any {
+    return this.$windowfocusleft
+  }
+  get isWindowFocusLeftToggleFocus(): any {
+    return this.WindowFocusLeftToggle.attr('focus') === 'focus'
+  }
+
   //TODO: set split size made by user
   resetVerticalSize(size?: string): void {
     this.$gridVertical.css('grid-template-columns', size || this.DEFAULT_GRID_VERTICAL_SIZE)
@@ -249,15 +272,87 @@ export class SplitUtils {
   }
 
   setMainFocus(reset?: boolean): void {
+    console.log('setMainFocus')
+
+    this.$windowfocusright.removeAttr('focus')
+    this.$windowfocusleft.removeAttr('focus')
+
     if (reset) {
+      // remove indicator from main
       this.$windowfocus.removeAttr('focus')
+
+      // remove indicator from left and right aside
       this.$gridMainSplitLeftAside.removeAttr('focus')
       this.$gridMainSplitRightAside.removeAttr('focus')
       return
     }
+    // add indicator to main
     this.$windowfocus.attr('focus', 'focus')
+    // add indicator to left and right aside
     this.$gridMainSplitLeftAside.attr('focus', 'focus')
     this.$gridMainSplitRightAside.attr('focus', 'focus')
+  }
+
+  setMainFocusLeft(reset?: boolean): void {
+    console.log('setMainFocusLeft')
+
+    this.$windowfocusright.removeAttr('focus')
+    this.$windowfocus.removeAttr('focus')
+
+    if (reset) {
+      // remove indicators
+      this.$windowfocusleft.removeAttr('focus')
+
+      // remove indicator from right and left aside
+      this.$gridMainSplitLeftAside.removeAttr('focus')
+      this.$gridMainSplitRightAside.removeAttr('focus')
+      // remove indicator from vertical split
+      this.$gridVerticalSplit.removeAttr('focus')
+      // remove indicator from horizontal split
+      this.$gridHorizontalSplitGutter.removeAttr('focus')
+      return
+    }
+    // add indicator to left
+    this.$windowfocusleft.attr('focus', 'focus')
+    // add indicator to right and left aside
+    this.$gridMainSplitRightAside.attr('focus', 'focus')
+    this.$gridMainSplitLeftAside.attr('focus', 'focus')
+    // add indicator to vertical split
+    this.$gridVerticalSplit.attr('focus', 'focus')
+    // add indicator to horizontal split
+    this.$gridHorizontalSplitGutter.attr('focus', 'focus')
+  }
+
+  setMainFocusRight(reset?: boolean): void {
+    console.log('setMainFocusRight')
+
+    this.$windowfocusleft.removeAttr('focus')
+    this.$windowfocus.removeAttr('focus')
+
+    if (reset) {
+      // remove indicator from right
+      this.$windowfocusright.removeAttr('focus')
+      this.$windowfocusright.removeAttr('focus')
+      this.$windowfocus.removeAttr('focus')
+
+      // remove indicator from right and left aside
+      this.$gridMainSplitLeftAside.removeAttr('focus')
+      this.$gridMainSplitRightAside.removeAttr('focus')
+      // remove indicator from vertical split
+      this.$gridVerticalSplit.removeAttr('focus')
+      // remove indicator from horizontal split
+      this.$gridHorizontalSplitGutter.removeAttr('focus')
+      return
+    }
+    // add indicator to right
+    this.$windowfocusright.attr('focus', 'focus')
+    // add indicator to right and left aside
+    this.$gridMainSplitRightAside.attr('focus', 'focus')
+    this.$gridMainSplitLeftAside.attr('focus', 'focus')
+    // add indicator to vertical split
+    this.$gridVerticalSplit.attr('focus', 'focus')
+    // add indicator to horizontal split
+    this.$gridHorizontalSplitGutter.attr('focus', 'focus')
   }
 
   resetMainSize(size?: string): void {
@@ -283,7 +378,9 @@ export class SplitUtils {
   // use to dump html into an element
   updateElementSize($element, $outputelement): void {
     const size = this.getSize(this.$($element))
-    this.$($outputelement).html(size.width + 'px x ' + size.height + 'px')
+    this.$($outputelement)
+      .find('.size-text')
+      .html(Math.round(size.width) + 'px x ' + Math.round(size.height) + 'px')
   }
 
   getSize($element): { width: number; height: number } {
@@ -292,5 +389,82 @@ export class SplitUtils {
       height: $element.height()
     }
     return size
+  }
+
+  getLayout(): any {
+    return {
+      left: {
+        y: this.ContentLeft.offset().top,
+        x: this.ContentLeft.offset().left,
+        width: this.ContentLeft.width(),
+        height: this.ContentLeft.height()
+      },
+      leftContent: {
+        y: this.ContentLeftBody.offset().top,
+        x: this.ContentLeftBody.offset().left,
+        width: this.ContentLeftBody.width(),
+        height: this.ContentLeftBody.height()
+      },
+      leftTabs: {
+        y: this.ContentLeftTabs.offset().top,
+        x: this.ContentLeftTabs.offset().left,
+        width: this.ContentLeftTabs.width(),
+        height: this.ContentLeftTabs.height()
+      },
+      leftAddressBar: {
+        y: this.ContentLeftAddressBar.offset().top,
+        x: this.ContentLeftAddressBar.offset().left,
+        width: this.ContentLeftAddressBar.width(),
+        height: this.ContentLeftAddressBar.height()
+      },
+      right: {
+        y: this.ContentRight.offset().top,
+        x: this.ContentRight.offset().left,
+        width: this.ContentRight.width(),
+        height: this.ContentRight.height()
+      },
+      rightContent: {
+        y: this.ContentRightBody.offset().top,
+        x: this.ContentRightBody.offset().left,
+        width: this.ContentRightBody.width(),
+        height: this.ContentRightBody.height()
+      },
+      rightTabs: {
+        y: this.ContentRightTabs.offset().top,
+        x: this.ContentRightTabs.offset().left,
+        width: this.ContentRightTabs.width(),
+        height: this.ContentRightTabs.height()
+      },
+      rightAddressBar: {
+        y: this.ContentRightAddressBar.offset().top,
+        x: this.ContentRightAddressBar.offset().left,
+        width: this.ContentRightAddressBar.width(),
+        height: this.ContentRightAddressBar.height()
+      },
+      gutter: {
+        y: this.Gutter.offset().top,
+        x: this.Gutter.offset().left,
+        width: this.Gutter.width(),
+        height: this.Gutter.height()
+      },
+      leftAside: {
+        y: this.LeftAside.offset().top,
+        x: this.LeftAside.offset().left,
+        width: this.LeftAside.width(),
+        height: this.LeftAside.height()
+      },
+      rightAside: {
+        y: this.RightAside.offset().top,
+        x: this.RightAside.offset().left,
+        width: this.RightAside.width(),
+        height: this.RightAside.height()
+      },
+      footer: {
+        y: this.Footer.offset().top,
+        x: this.Footer.offset().left,
+        width: this.Footer.width(),
+        height: this.Footer.height()
+      }
+    }
   }
 }

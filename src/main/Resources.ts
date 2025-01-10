@@ -1,4 +1,4 @@
-import pkg from 'electron'
+import pkg, { BrowserWindow } from 'electron'
 const { app } = pkg
 import { existsSync, writeFile, mkdirSync } from 'fs'
 import path from 'path'

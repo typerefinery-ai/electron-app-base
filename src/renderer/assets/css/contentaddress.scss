@@ -5,12 +5,17 @@
   align-content: stretch;
   height: 25px;
   font-size: 10px;
-  border: var(--debug-border);
-  background-color: var(--url-secure-color);
+  //border: var(--debug-border);
+  //background-color: var(--url-secure-color);
   // padding: var(--element-padding);
 }
 
-.contentaddress .urlstatus {
+.contentaddress .urlstatus,
+.contentaddress .urlstatus .notsecure {
+  background-color: var(--url-notsecure-color);
+}
+
+.contentaddress .urlstatus .secure {
   background-color: var(--url-secure-color);
 }
 
@@ -25,5 +30,5 @@
 /*debug*/
 .contentright .contentaddress,
 .contentright .contentaddress .urlstatus {
-  background-color: var(--url-notsecure-color);
+  //background-color: var(--url-notsecure-color);
 }

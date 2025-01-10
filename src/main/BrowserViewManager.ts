@@ -195,6 +195,51 @@ export class BrowserViewManager {
     }
   }
 
+  // cancelResize
+  public cancelResize(): void {
+    this.showAll()
+  }
+
+  public show(browserViewId: string): void {
+    // show browserView in the current deck
+    Object.keys(this.#browserViewDecks).forEach((key) => {
+      const deck = this.#browserViewDecks[key]
+      if (deck.current) {
+        if (deck.current.applicationKey === browserViewId) {
+          this.showBrowserViewInDeck(deck, browserViewId)
+        }
+      }
+    })
+  }
+
+  public showAll(): void {
+    // show browserViews in all decks
+    Object.keys(this.#browserViewDecks).forEach((key) => {
+      const deck = this.#browserViewDecks[key]
+      // show the browserView in the deck
+      if (deck.current) {
+        const browserView = deck.current.browserView
+        if (browserView && deck.size) {
+          this.resizeView(browserView, deck.size)
+        }
+      }
+    })
+  }
+
+  public hideAll(): void {
+    // hide all browserViews in all decks
+    Object.keys(this.#browserViewDecks).forEach((key) => {
+      const deck = this.#browserViewDecks[key]
+      if (deck.current) {
+        // for each deck, hide the current browserView
+        const browserView = deck.current.browserView
+        if (browserView) {
+          this.hideView(browserView)
+        }
+      }
+    })
+  }
+
   // hide a browser view
   private hideView(browserView: BrowserView): void {
     browserView.setBounds({ x: 0, y: 0, width: 0, height: 0 })

@@ -55,6 +55,10 @@ import { updateElectronApp, UpdateSourceType } from 'update-electron-app'
 
 //height of the home bar
 const DEFAULT_SHORTCUT_CONSOLE = 'CmdOrCtrl+Alt+I'
+const DEFAULT_SHORTCUT_FOCUS = 'Alt+f'
+const DEFAULT_SHORTCUT_FOCUS_LEFT = 'Alt+l'
+const DEFAULT_SHORTCUT_FOCUS_RIGHT = 'Alt+r'
+const DEFAULT_SHORTCUT_SETTING = 'Alt+b'
 
 // tarack when the main window is closing
 let mainWindowClosing = false
@@ -71,6 +75,9 @@ let mainWindowTray: Tray //create and update app tray icon
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let mainLayoutConfig: BrowserViewLayout
 
+const MAIN_LOGFILE_NAME = 'main.log'
+const MAIN_DEFAULT_ICON = 'assets/logo.png'
+const WINDOW_CHILD_DEFAULT_ICON = 'assets/logo.png'
 const MAIN_WINDOW_FILE = '../renderer/index.html'
 const SCRIPT_PRELOAD = path.join(__dirname, '../preload/index.js')
 const SCRIPT_PRELOAD_TRUSTED = path.join(__dirname, '../preload/trusted.js')
@@ -145,7 +152,7 @@ const defaultMainWindowOptions: BrowserWindowConstructorOptions = {
 const defaultChildWindowOptions: BrowserWindowConstructorOptions = {
   minWidth: 680,
   minHeight: 400,
-  icon: path.join(__dirname, 'resources/icon.ico'),
+  icon: path.join(__dirname, WINDOW_CHILD_DEFAULT_ICON),
   autoHideMenuBar: true
 }
 
@@ -154,7 +161,7 @@ dotenv.config()
 
 // Setup logging to file after crash reporter.
 Object.assign(console, log.functions)
-log.transports.file.resolvePathFn = (): string => path.join(logsDir, 'main.log')
+log.transports.file.resolvePathFn = (): string => path.join(logsDir, MAIN_LOGFILE_NAME)
 const logger = new Logger(logsDir, 'electron')
 
 logger.log(`app.isPackaged: ${app.isPackaged}`)
@@ -243,7 +250,7 @@ app.whenReady().then(() => {
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
-    setWindowIcon()
+    setWindowIcon(MAIN_DEFAULT_ICON)
   })
 
   // set default window state
@@ -421,6 +428,10 @@ app.on('window-all-closed', () => {
   }
 })
 
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
+})
+
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
 
@@ -594,10 +605,43 @@ function addIpcEvents(window: BrowserWindow): void {
       logger.log(`ipc getGlobalEnv`)
       // return serviceManager.getGlobalEnv()
     },
+    windowResizeCancel(): void {
+      logger.log(`ipc windowResizeCancel`)
+      browserViewManager.cancelResize()
+    },
+    windowResizeStart(name: string): void {
+      logger.log(`ipc windowResizeStart ${name}`)
+      browserViewManager.hideAll(name)
+      // browserViewManager.resizeStart()
+    },
+    windowResizeEnd(name: string): void {
+      logger.log(`ipc windowResizeEnd ${name}`)
+      browserViewManager.showAll(name)
+      // browserViewManager.resizeEnd()
+    },
     windowResize(layoutConfig: BrowserViewLayout): void {
       // logger.log(`ipc main windowResize`, layoutConfig)
       mainLayoutConfig = layoutConfig
       browserViewManager.resize(layoutConfig)
+    },
+    windowHide(name: string): void {
+      logger.log(`ipc windowHide ${name}`)
+      browserViewManager.hideAll()
+    },
+    windowShow(name: string): void {
+      logger.log(`ipc windowShow ${name}`)
+      // if name is empty, show all
+      if (name === '') {
+        browserViewManager.showAll()
+      } else {
+        browserViewManager.show(name)
+      }
+    },
+    setWindowTitle(title: string): void {
+      logger.log(`ipc setWindowTitle ${title}`)
+      mainWindow.setTitle(title)
+      // run setWindowTitle in renderer
+      mainWindow.webContents.send('setWindowTitle', title)
     },
     switchPageLeft(config: never): void {
       logger.log(`ipc switchPageLeft`, config)
@@ -620,6 +664,21 @@ function addIpcEvents(window: BrowserWindow): void {
     },
     getEnv: function (): any[] | Promise<any[]> {
       throw new Error('Function not implemented.')
+    },
+    topicSend: function (sourceId: string, topic: string, data: any): void {
+      throw new Error('Function not implemented.')
+    },
+    topicListen: function (sourceId: string, topic: string, data: any): void {
+      throw new Error('Function not implemented.')
+    },
+    windowFocus: function (): void {
+      mainWindow.webContents.send('windowFocusRight')
+    },
+    windowFocusLeft: function (): void {
+      mainWindow.webContents.send('windowFocusRight')
+    },
+    windowFocusRight: function (): void {
+      mainWindow.webContents.send('windowFocusRight')
     }
   }
 
@@ -709,6 +768,15 @@ function createMainWindow(mainWindowState: ElectronWindowState.State): Electron.
     // })
   })
 
+  // on blur
+  newMainWindow.on('blur', () => {
+    //console.log('main window blur')
+    // browserViewManager.hideAll()
+    if (browserViewManager) {
+      browserViewManager.cancelResize()
+    }
+  })
+
   newMainWindow.on('closed', () => {
     if (browserViewManager) {
       browserViewManager.destroyAllBrowserView()
@@ -739,7 +807,7 @@ function createMainWindow(mainWindowState: ElectronWindowState.State): Electron.
 
   mainWindowMenu = createMenu(defaultMainWidowMenyTemplate, !app.isPackaged)
   mainWindowTray = createTray(
-    mainWindow,
+    newMainWindow,
     defaultMainWindowTrayMenuTemplate,
     getConfig('productName'),
     staticAsset('assets/tray_icon.png')
@@ -750,14 +818,40 @@ function createMainWindow(mainWindowState: ElectronWindowState.State): Electron.
     DEVTOOLS(mainWindow)
   })
 
+  // add shortcut to focus on main window
+  globalShortcut.register(DEFAULT_SHORTCUT_FOCUS, () => {
+    logger.log('windowFocus')
+    if (mainWindow) {
+      logger.log('send windowFocus')
+      mainWindow.webContents.send('windowFocus')
+    }
+  })
+
+  // add shortcut to focus on left window
+  globalShortcut.register(DEFAULT_SHORTCUT_FOCUS_LEFT, () => {
+    logger.log('windowFocusLeft')
+    if (mainWindow) {
+      mainWindow.webContents.send('windowFocusLeft')
+    }
+  })
+
+  // add shortcut to focus on right window
+  globalShortcut.register(DEFAULT_SHORTCUT_FOCUS_RIGHT, () => {
+    logger.log('windowFocusRight')
+    if (mainWindow) {
+      mainWindow.webContents.send('windowFocusRight')
+    }
+  })
+
   return newMainWindow
 }
 
 /* UTILS */
 
-function setWindowIcon(): void {
+function setWindowIcon(assetPath: string): void {
   if (process.platform === 'linux') {
-    mainWindow.setIcon(path.join(__dirname, 'res/applogo.png'))
+    const iconPath: string = path.join(__dirname, assetPath)
+    mainWindow.setIcon(iconPath)
   }
 }
 
